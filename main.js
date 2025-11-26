@@ -4,6 +4,8 @@ const words =
     .split(/\s+/); // split by any whitespace
 
 const wordsCount = words.length;
+let spaceTimeTrigger = false;
+
 
 let gameTime = 30 * 1000;
 // you can add the custom objects to window to handle
@@ -51,9 +53,9 @@ options.forEach((value) => {
 
   container.appendChild(box);
 });
-  setTimeout(() => {
-    container.firstElementChild.classList.add("active");
-  }, 0);
+setTimeout(() => {
+  container.firstElementChild.classList.add("active");
+}, 0);
 
 function randomWord() {
   const randomIndex = Math.floor(Math.random() * wordsCount);
@@ -118,12 +120,6 @@ function getWpm() {
   return (correctWords.length / gameTime) * 60000;
 }
 
-function gameOver() {
-  clearInterval(window.timer);
-  addClass(document.getElementById("game"), "over");
-  document.getElementById("info").innerHTML = `WPM: ${getWpm()}`;
-}
-
 document.getElementById("game").addEventListener("keydown", (e) => {
   const key = e.key;
   const currentWord = document.querySelector(".word.current");
@@ -163,6 +159,7 @@ document.getElementById("game").addEventListener("keydown", (e) => {
   }
 
   if (isLetter) {
+    spaceTimeTrigger = true;
     if (currentLetter) {
       addClass(currentLetter, key === expected ? "correct" : "incorrect");
       removeClass(currentLetter, "current");
@@ -182,7 +179,7 @@ document.getElementById("game").addEventListener("keydown", (e) => {
     }
   }
 
-  if (isSpace) {
+  if (isSpace && spaceTimeTrigger) {
     if (expected != " ") {
       // learned the not childs to avoid , cool man
       // converting the object to array
@@ -247,7 +244,7 @@ document.getElementById("game").addEventListener("keydown", (e) => {
   }
 
   //move the lines / words
-  if (currentWord.getBoundingClientRect().top > 255) {
+  if (currentWord.getBoundingClientRect().top > 395) {
     const wordsContainer = document.getElementById("words");
     const margin = parseInt(wordsContainer.style.marginTop || "0", 10);
     wordsContainer.style.marginTop = margin - 35 + "px";
@@ -266,8 +263,141 @@ document.getElementById("game").addEventListener("keydown", (e) => {
   }
 });
 
-document.getElementById('newGame').addEventListener('click', ()=>{
-  window.location.reload()
-})
+document.getElementById("newGame").addEventListener("click", () => {
+  window.location.reload();
+});
 
 newGame();
+
+function storeScore(wpm) {
+  // If no WPM provided, just fetch and display existing scores
+  if (wpm === undefined) {
+    fetchSpeeds();
+    return;
+  }
+
+  // Get existing scores from localStorage
+  let scores = JSON.parse(localStorage.getItem("shifty-scores")) || [];
+  
+  const timestamp = new Date().toISOString();
+  
+  // Add new score
+  scores.push({ wpm: Math.round(wpm), time: (gameTime/1000),  timestamp });
+  
+  // Sort scores by timestamp in descending order (newest first)
+  scores.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  // Keep only the last 5 scores
+  scores = scores.slice(0, 5);
+  
+  // Save back to localStorage
+  localStorage.setItem("shifty-scores", JSON.stringify(scores));
+  
+  // Update the display
+  fetchSpeeds();
+}
+
+function fetchSpeeds() {
+  // Clear previous list items
+  const ul = document.querySelector(".speed-container ul");
+  ul.innerHTML = '';
+  
+  // Get scores from localStorage
+  const scores = JSON.parse(localStorage.getItem("shifty-scores")) || [];
+  
+  if (scores.length > 0) {
+    // Display scores in descending order (newest first)
+    scores.forEach((score) => {
+      const listItem = document.createElement("li");
+      
+      // Format the date to show only date (no time)
+      const date = new Date(score.timestamp);
+      const formattedDate = date.toLocaleDateString(); // Only date, no time
+      
+      listItem.innerText = `WPM: ${Math.round(score.wpm)} - Time: ${score.time}s`;
+      ul.appendChild(listItem);
+    });
+  } else {
+    // Show message if no scores available
+    const listItem = document.createElement("li");
+    listItem.innerText = "No scores yet";
+    listItem.style.opacity = "0.7";
+    ul.appendChild(listItem);
+  }
+}
+
+// Also update the gameOver function to round the WPM
+function gameOver() {
+  clearInterval(window.timer);
+  addClass(document.getElementById("game"), "over");
+  const score = getWpm();
+  const roundedScore = Math.round(score);
+  document.getElementById("info").innerHTML = `WPM: ${roundedScore}`;
+  storeScore(roundedScore); // Store rounded score
+}
+
+storeScore();
+
+
+
+function initMobileUI() {
+    const mobileUI = document.getElementById('mobileUI');
+    const keyboardStatus = document.getElementById('keyboardStatus');
+    const yesBtn = document.getElementById('playAnywayBtn');
+    const noBtn = document.getElementById('checkKeyboardBtn');
+    
+    let initialized = false;
+    
+    function isMobileDevice() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+               window.innerWidth <= 650;
+    }
+    
+    function hideMobileUI() {
+        mobileUI.classList.remove('active');
+        document.getElementById('game').focus();
+    }
+    
+    function showMobileUI() {
+        mobileUI.classList.add('active');
+    }
+    
+    function setupEventListeners() {
+        if (initialized) return;
+        
+        yesBtn.addEventListener('click', () => {
+            keyboardStatus.textContent = "✅ Great! You can play now.";
+            keyboardStatus.className = 'keyboard-connected';
+            setTimeout(hideMobileUI, 1000);
+        });
+        
+        noBtn.addEventListener('click', () => {
+            keyboardStatus.textContent = "🔗 Please connect an external keyboard for better experience";
+            keyboardStatus.className = 'keyboard-not-connected';
+        });
+        
+        initialized = true;
+    }
+    
+    function checkMobile() {
+        if (isMobileDevice()) {
+            showMobileUI();
+        } else {
+            hideMobileUI();
+        }
+    }
+    
+    // Setup events once
+    setupEventListeners();
+    // Check initial state
+    checkMobile();
+    
+    return checkMobile;
+}
+
+// Initialize once
+const checkMobile = initMobileUI();
+
+// Only check visibility on resize, don't reinitialize
+window.addEventListener('resize', checkMobile);
+

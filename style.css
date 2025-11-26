@@ -21,8 +21,9 @@ body {
 }
 
 main {
-  width: 600px;
+  width: 800px;
   margin: 50px auto;
+  min-height: 500px;
 }
 
 h1 {
@@ -33,9 +34,28 @@ h1 {
   margin-bottom: 30px;
 }
 
-h1 svg {
+h1 img {
   width: 40px;
   fill: var(--primaryColor);
+}
+
+h1 p {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 5px;
+  position: relative;
+  padding: 10px 0;
+}
+
+h1 p:after {
+  content: "";
+  position: absolute;
+  right: -70%;
+  bottom: 0;
+  width: 100%;
+  height: 3px;
+  background: orange;
+  border-radius: 15px;
 }
 
 #header {
@@ -44,17 +64,16 @@ h1 svg {
   margin: 40px 0;
 }
 
-
 #info {
   color: var(--primaryColor);
 }
 
-.flex-box{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap:10px;
-    margin-bottom: 15px;
+.flex-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
 #numbers {
@@ -82,19 +101,46 @@ h1 svg {
 }
 
 button {
-  background: rbga(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.8); /* Fixed typo: rbga -> rgba */
   border: 0;
-  color: rbga(255, 255, 255, 0.5);
-  padding: 5px 20px;
+  color: #000; /* Changed for better contrast */
+  padding: 15px 20px;
   border-radius: 5px;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  z-index: 1; /* Changed from 0 to ensure proper stacking */
+  font-size: 16px;
+  transition: color 0.5s ease; /* Added transition for text color */
+}
+
+button::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  height: 0;
+  width: 100%;
+  bottom: 0;
+  background: #000;
+  transition: all 0.5s ease;
+  z-index: -1; /* Changed to -1 to be behind the text */
+}
+
+button:hover::after {
+  height: 100%;
+}
+
+button:hover {
+  color: #fff; /* Directly target button text color */
 }
 
 div#game {
   line-height: 35px;
-  height: 105px;
+  height: 205px;
   overflow: hidden;
   position: relative;
+  margin: 50px auto;
+  padding: 20px 0;
 }
 
 #words {
@@ -104,6 +150,10 @@ div#game {
 
 div#game:focus {
   outline: 0;
+}
+
+#game:focus #words {
+  margin: 20px auto;
 }
 
 #game:focus #words {
@@ -171,4 +221,133 @@ div.word {
 
 #game.over #focus-error {
   display: none;
+}
+
+.speed-container {
+  margin: 40px auto;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #a1a1a1;
+}
+
+.speed-container h3 {
+  color: yellowgreen;
+}
+
+.speed-container ul {
+  list-style-type: square;
+  margin-left: 20px;
+}
+
+.speed-container ul li {
+  margin: 10px auto;
+  opacity: 0;
+  animation: fadeup 0.5s ease-in forwards;
+}
+
+.speed-container ul li:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.speed-container ul li:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.speed-container ul li:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.speed-container ul li:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.speed-container ul li:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+@keyframes fadeup {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-ui {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    background: rgba(97, 105, 20, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    justify-content: center;
+    align-items: center;
+    font-family: inherit;
+    flex-direction: column;
+}
+
+.mobile-ui.active {
+    display: flex;
+}
+
+
+.keyboard-connected {
+    background: #d4edda !important;
+    color: #155724 !important;
+    border: 1px solid #c3e6cb !important;
+}
+
+.keyboard-not-connected {
+    background: #f8d7da !important;
+    color: #721c24 !important;
+    border: 1px solid #f1b0b7 !important;
+}
+
+.keyboard-checking {
+    background: #fff3cd !important;
+    color: #856404 !important;
+    border: 1px solid #ffeaa7 !important;
+}
+
+/* Mobile responsive styles */
+@media screen and (max-width: 950px) {
+  main {
+    width: 90%;
+
+  }
+}
+
+/* Mobile responsive styles */
+@media screen and (max-width: 650px) {
+  .mobile-ui.active {
+    display: flex;
+  }
+
+  .mobile-ui-content {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+
+  .mobile-ui h1 {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .keyboard-check button {
+    display: block;
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+
+  .mobile-message{
+    color: #A1A1A1;
+    font-size: 1.3rem;
+    text-align: center;
+    margin: 20px 0;
+  }
 }
