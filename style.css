@@ -88,7 +88,7 @@ h1 p:after {
 }
 
 .number:hover {
-  color: var(--primaryColor);
+  color: greenyellow;
 }
 
 .number.active {
@@ -275,50 +275,67 @@ div.word {
 }
 
 .mobile-ui {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 9999;
-    background: rgba(97, 105, 20, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    justify-content: center;
-    align-items: center;
-    font-family: inherit;
-    flex-direction: column;
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  background: rgba(97, 105, 20, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  justify-content: center;
+  align-items: center;
+  font-family: inherit;
+  flex-direction: column;
 }
-
-.mobile-ui.active {
-    display: flex;
-}
-
 
 .keyboard-connected {
-    background: #d4edda !important;
-    color: #155724 !important;
-    border: 1px solid #c3e6cb !important;
+  background: #d4edda !important;
+  color: #155724 !important;
+  border: 1px solid #c3e6cb !important;
 }
 
 .keyboard-not-connected {
-    background: #f8d7da !important;
-    color: #721c24 !important;
-    border: 1px solid #f1b0b7 !important;
+  background: #f8d7da !important;
+  color: #721c24 !important;
+  border: 1px solid #f1b0b7 !important;
 }
 
 .keyboard-checking {
-    background: #fff3cd !important;
-    color: #856404 !important;
-    border: 1px solid #ffeaa7 !important;
+  background: #fff3cd !important;
+  color: #856404 !important;
+  border: 1px solid #ffeaa7 !important;
+}
+
+.mobile-ui-content {
+  padding: 1.5rem;
+  margin: 1rem;
+}
+
+.mobile-ui h1 {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.keyboard-check button {
+  display: block;
+  width: 100%;
+  margin: 0.5rem 0;
+}
+
+.mobile-message {
+  color: #a1a1a1;
+  font-size: 1.3rem;
+  text-align: center;
+  margin: 20px 0;
 }
 
 /* Mobile responsive styles */
 @media screen and (max-width: 950px) {
   main {
     width: 90%;
-
   }
 }
 
@@ -328,26 +345,25 @@ div.word {
     display: flex;
   }
 
-  .mobile-ui-content {
-    padding: 1.5rem;
-    margin: 1rem;
+  #time-ui{
+    display: flex;
+    flex-direction: column;;
+    text-transform: uppercase;
   }
 
-  .mobile-ui h1 {
-    flex-direction: column;
-    gap: 0.5rem;
+  .flex-box{
+    gap: 4px;
   }
 
-  .keyboard-check button {
-    display: block;
-    width: 100%;
-    margin: 0.5rem 0;
+  #numbers{
+    gap: 2px;
   }
 
-  .mobile-message{
-    color: #A1A1A1;
-    font-size: 1.3rem;
-    text-align: center;
-    margin: 20px 0;
+  button{
+    padding: 15px 5px;
+  }
+
+  div#game{
+    margin-top: 20px;
   }
 }
