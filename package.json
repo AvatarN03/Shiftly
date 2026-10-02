@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node scripts/build.mjs",
     "check": "tsc --noEmit"
   },
   "devDependencies": {

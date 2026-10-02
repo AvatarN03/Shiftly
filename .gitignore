@@ -1,0 +1,7 @@
+node_modules/
+
+# Static files copied into the deployment directory by scripts/build.mjs.
+/dist/index.html
+/dist/css/
+/dist/assets/
+/dist/data/
