@@ -1,110 +1,165 @@
-.app-shell {
-  display: flex;
+.app-root {
   min-height: 100vh;
+  display: flex;
   flex-direction: column;
+  align-items: center;
+  padding: 32px 24px 64px 24px;
+  position: relative;
 }
 
-.app-header,
-.app-footer,
-.app-viewport {
-  width: min(calc(100% - 48px), var(--container-max-w));
-  margin-inline: auto;
-}
-
+/* TOP HEADER ZONE */
 .app-header {
+  width: 100%;
+  max-width: var(--container-max-w);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  min-height: 88px;
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 8px 0 28px 0;
 }
 
-.brand {
-  display: inline-flex;
+.brand-zone {
+  display: flex;
   align-items: baseline;
-  gap: 9px;
+  gap: 8px;
+}
+
+.brand-wordmark {
+  font-family: var(--font-sans);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   color: var(--text-primary);
-  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: opacity var(--trans-fast);
 }
 
-.brand-mark {
-  color: var(--accent);
-  font-family: "JetBrains Mono", "IBM Plex Mono", Consolas, monospace;
-  font-size: 18px;
-  font-weight: 700;
+.brand-wordmark:hover {
+  opacity: 0.85;
 }
 
-.brand-name {
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+.brand-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 2px;
+  border-radius: 50%;
+  background-color: var(--accent);
 }
 
 .brand-version {
-  color: var(--text-tertiary);
-  font-family: "JetBrains Mono", "IBM Plex Mono", Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.02em;
 }
 
-.config-bar,
-.header-actions {
+.header-controls {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 12px;
 }
 
-.config-item,
-.meta-line,
-.app-footer {
-  color: var(--text-tertiary);
-  font-size: 12px;
-}
-
-.config-item + .config-item::before,
-.meta-line span + span::before {
-  margin-right: 18px;
-  color: var(--text-dim);
-  content: "·";
-}
-
-.app-viewport {
+.shortcut-badge {
   display: flex;
-  flex: 1;
-  flex-direction: column;
-  justify-content: center;
-  padding-block: 56px 72px;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
 }
 
-.screen-state {
+.header-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  background: transparent;
+  transition: color var(--trans-fast), background var(--trans-fast);
+}
+
+.header-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.header-btn.active {
+  color: var(--accent);
+}
+
+/* MINIMAL TEST CONFIGURATION ROW */
+.config-bar {
   width: 100%;
+  max-width: var(--container-max-w);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px 16px;
+  margin-bottom: 36px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
 }
 
-.app-footer {
-  padding-block: 20px 28px;
-  text-align: center;
+.config-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-@media (max-width: 680px) {
-  .app-header,
-  .app-footer,
-  .app-viewport {
-    width: min(calc(100% - 32px), var(--container-max-w));
-  }
+.config-btn {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  transition: all var(--trans-fast);
+  white-space: nowrap;
+  position: relative;
+}
 
-  .app-header {
-    min-height: 72px;
-  }
+.config-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
 
-  .config-bar {
-    gap: 10px;
-  }
+.config-btn.active {
+  color: var(--accent);
+  background: var(--accent-muted);
+  font-weight: 600;
+}
 
-  .config-item:nth-child(n + 3) {
-    display: none;
-  }
+.config-btn.active::after {
+  display: none;
+}
 
-  .app-viewport {
-    padding-block: 36px 48px;
-  }
+.config-divider {
+  color: var(--border-subtle);
+  font-size: 13px;
+  user-select: none;
+}
+
+/* MAIN VIEWPORT CONTAINER */
+.app-viewport {
+  width: 100%;
+  max-width: var(--container-max-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* STATE CONTAINERS (TYPING & RESULT) */
+.state-container {
+  width: 100%;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  pointer-events: none;
+}
+
+.state-container.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }

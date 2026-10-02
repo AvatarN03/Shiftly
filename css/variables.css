@@ -1,4 +1,5 @@
 :root {
+  /* Core Color Palette */
   --bg-primary: #121212;
   --bg-secondary: #171717;
   --bg-hover: #222222;
@@ -9,23 +10,32 @@
   --text-tertiary: #757575;
   --text-dim: #484848;
 
+  /* Accent: Warm Amber / Yellow */
   --accent: #f59e0b;
   --accent-hover: #fbbf24;
   --accent-muted: rgba(245, 158, 11, 0.14);
   --accent-glow: rgba(245, 158, 11, 0.3);
 
+  /* Status Colors */
   --color-correct: #ffffff;
   --color-incorrect: #f87171;
   --color-incorrect-bg: rgba(248, 113, 113, 0.2);
   --color-untyped: #7c7c7c;
 
+  /* Hairline Borders */
   --border-subtle: rgba(255, 255, 255, 0.12);
   --border-focus: rgba(245, 158, 11, 0.5);
 
+  /* Typography */
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Spacing & Sizes */
   --container-max-w: 960px;
-  --typing-line-height: 48px;
   --radius-sm: 4px;
   --radius-md: 6px;
-  --transition-fast: 140ms ease;
-  --transition-base: 220ms ease;
+
+  /* Transitions */
+  --trans-fast: 0.12s ease;
+  --trans-smooth: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }

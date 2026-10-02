@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shiftly 2.0</title>
+    <meta
+      name="description"
+      content="Minimalist typing-speed practice application prototype — fast, technical, and focused."
+    />
+    <meta property="og:title" content="Shiftly 2.0" />
+    <meta
+      property="og:description"
+      content="Minimalist typing-speed practice application prototype — fast, technical, and focused."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/index.css" />
+  </head>
+  <body class="shiftly-body">
+    <div id="app" class="app-root">
+      <!-- HEADER ZONE -->
+      <header class="app-header" role="banner">
+        <div class="brand-zone">
+          <a
+            href="#"
+            class="brand-wordmark"
+            id="brand-home"
+            aria-label="Shiftly home"
+          >
+            SHIFTLY<span class="brand-dot"></span>
+          </a>
+          <span class="brand-version" aria-hidden="true">2.0</span>
+        </div>
+
+        <div class="header-controls">
+          <div class="shortcut-badge" title="Quick restart shortcut">
+            <kbd>Tab</kbd> + <kbd>Enter</kbd>
+          </div>
+          <button
+            id="sound-toggle-btn"
+            class="header-btn active"
+            type="button"
+            aria-label="Toggle mechanical sound feedback"
+            title="Typing audio feedback"
+          >
+            <svg
+              class="icon-svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" class="sound-wave"></path>
+              <line
+                x1="23"
+                y1="9"
+                x2="17"
+                y2="15"
+                class="sound-mute-line"
+                style="display: none"
+              ></line>
+              <line
+                x1="17"
+                y1="9"
+                x2="23"
+                y2="15"
+                class="sound-mute-line"
+                style="display: none"
+              ></line>
+            </svg>
+          </button>
+          <button
+            id="settings-toggle-btn"
+            class="header-btn"
+            type="button"
+            aria-label="Open settings"
+            title="Quick preferences"
+          >
+            <svg
+              class="icon-svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="3"></circle>
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+              ></path>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- TEST CONFIGURATION BAR -->
+      <nav class="config-bar" aria-label="Test configuration">
+        <div
+          class="config-group"
+          id="mode-type-group"
+          role="tablist"
+          aria-label="Mode type"
+        >
+          <button
+            class="config-btn active"
+            data-type="time"
+            role="tab"
+            aria-selected="true"
+          >
+            time
+          </button>
+          <button
+            class="config-btn"
+            data-type="words"
+            role="tab"
+            aria-selected="false"
+          >
+            words
+          </button>
+        </div>
+
+        <span class="config-divider" aria-hidden="true">|</span>
+
+        <!-- Time Mode Options -->
+        <div
+          class="config-group"
+          id="time-options-group"
+          role="tablist"
+          aria-label="Time options"
+        >
+          <button
+            class="config-btn"
+            data-time="15"
+            role="tab"
+            aria-selected="false"
+          >
+            15s
+          </button>
+          <button
+            class="config-btn active"
+            data-time="30"
+            role="tab"
+            aria-selected="true"
+          >
+            30s
+          </button>
+          <button
+            class="config-btn"
+            data-time="60"
+            role="tab"
+            aria-selected="false"
+          >
+            60s
+          </button>
+          <button
+            class="config-btn"
+            data-time="120"
+            role="tab"
+            aria-selected="false"
+          >
+            120s
+          </button>
+        </div>
+
+        <!-- Words Mode Options (hidden when time mode selected) -->
+        <div
+          class="config-group"
+          id="words-options-group"
+          role="tablist"
+          aria-label="Words options"
+          style="display: none"
+        >
+          <button
+            class="config-btn"
+            data-words="25"
+            role="tab"
+            aria-selected="false"
+          >
+            25
+          </button>
+          <button
+            class="config-btn active"
+            data-words="50"
+            role="tab"
+            aria-selected="true"
+          >
+            50
+          </button>
+          <button
+            class="config-btn"
+            data-words="100"
+            role="tab"
+            aria-selected="false"
+          >
+            100
+          </button>
+        </div>
+      </nav>
+
+      <!-- MAIN CONTAINER: SWITCHES BETWEEN TYPING STATE & RESULT STATE -->
+      <main class="app-viewport" id="viewport">
+        <!-- ============================================ -->
+        <!-- STATE 1: TYPING SCREEN -->
+        <!-- ============================================ -->
+        <section
+          id="typing-state"
+          class="state-container active"
+          aria-label="Typing practice view"
+        >
+          <!-- LIVE STATS -->
+          <div class="live-stats-bar" aria-live="polite">
+            <div class="live-stat-item timer-stat">
+              <span class="stat-value" id="live-timer">30</span>
+              <span class="stat-unit">s</span>
+            </div>
+            <div class="live-stat-item wpm-stat">
+              <span class="stat-value" id="live-wpm">0</span>
+              <span class="stat-unit">wpm</span>
+            </div>
+            <div class="live-stat-item acc-stat">
+              <span class="stat-value" id="live-acc">100</span>
+              <span class="stat-unit">% acc</span>
+            </div>
+          </div>
+
+          <!-- TYPING TEXT CONTAINER -->
+          <div
+            class="typing-box"
+            id="typing-box"
+            tabindex="0"
+            role="textbox"
+            aria-label="Type the text shown here"
+            aria-multiline="true"
+          >
+            <input
+              type="text"
+              id="hidden-typing-input"
+              class="hidden-input"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
+              aria-hidden="true"
+            />
+
+            <div class="words-wrapper" id="words-container">
+              <!-- Rendered words and characters inserted dynamically -->
+            </div>
+
+            <!-- UN-FOCUSED STATE MESSAGE -->
+            <div class="focus-notice" id="focus-notice">
+              <span class="focus-notice-icon">⌨</span>
+              <span>Click or start typing to focus</span>
+            </div>
+          </div>
+
+          <!-- RESTART & SHORTCUT CONTROLS -->
+          <div class="typing-controls-row">
+            <button
+              id="restart-btn"
+              class="restart-btn"
+              type="button"
+              aria-label="Restart typing session"
+            >
+              <svg
+                class="restart-icon"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"
+                />
+              </svg>
+              <span>Restart</span>
+            </button>
+            <div class="restart-subhint">
+              <span
+                >Press <kbd>Tab</kbd> + <kbd>Enter</kbd> to restart
+                anytime</span
+              >
+            </div>
+          </div>
+
+          <!-- SECONDARY INFORMATION -->
+          <footer class="session-meta-footer">
+            <span id="session-meta-mode">30 seconds</span>
+            <span class="meta-dot">·</span>
+            <span id="session-meta-lang">English</span>
+            <span class="meta-dot">·</span>
+            <span id="session-meta-rules">No punctuation</span>
+          </footer>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- STATE 2: RESULT SCREEN -->
+        <!-- ============================================ -->
+        <section
+          id="result-state"
+          class="state-container"
+          aria-label="Typing performance result"
+          style="display: none"
+        >
+          <div class="result-header">
+            <div class="result-kicker">Session Complete</div>
+          </div>
+
+          <!-- PRIMARY HERO RESULT -->
+          <div class="primary-result-cluster">
+            <div class="hero-wpm-block">
+              <span class="hero-wpm-number" id="result-net-wpm">72</span>
+              <span class="hero-wpm-label">WPM</span>
+            </div>
+            <div class="hero-accuracy-line">
+              <span id="result-accuracy">96.4</span>% accuracy
+            </div>
+          </div>
+
+          <!-- COMPACT METRICS ROW -->
+          <div class="metrics-tabular-row">
+            <div class="metric-cell">
+              <span class="metric-label">Raw WPM</span>
+              <span class="metric-val" id="result-raw-wpm">78.2</span>
+            </div>
+            <div class="metric-sep"></div>
+            <div class="metric-cell">
+              <span class="metric-label">Characters</span>
+              <span class="metric-val" id="result-chars"
+                >218 <span class="char-sub">/ 8</span></span
+              >
+            </div>
+            <div class="metric-sep"></div>
+            <div class="metric-cell">
+              <span class="metric-label">Consistency</span>
+              <span class="metric-val" id="result-consistency">83%</span>
+            </div>
+            <div class="metric-sep"></div>
+            <div class="metric-cell">
+              <span class="metric-label">Time</span>
+              <span class="metric-val" id="result-duration">30s</span>
+            </div>
+          </div>
+
+          <!-- TECHNICAL PERFORMANCE GRAPH -->
+          <div class="graph-section">
+            <div class="graph-header">
+              <span class="graph-title">Speed Stability</span>
+              <span class="graph-subtitle">Words per minute over time</span>
+            </div>
+            <div class="graph-canvas-container" id="graph-container">
+              <svg
+                id="performance-chart"
+                class="performance-chart"
+                viewBox="0 0 680 160"
+                preserveAspectRatio="none"
+                aria-label="WPM over time chart"
+              >
+                <!-- SVG chart elements generated via result-renderer -->
+              </svg>
+            </div>
+            <div class="graph-axis-labels">
+              <span>0s</span>
+              <span>10s</span>
+              <span>20s</span>
+              <span>30s</span>
+            </div>
+          </div>
+
+          <!-- DETAILED BREAKDOWN ROW -->
+          <div class="breakdown-grid">
+            <!-- MISTAKES ANALYSIS -->
+            <div class="breakdown-block">
+              <div class="breakdown-title">Mistakes Breakdown</div>
+              <div class="mistakes-list" id="mistakes-list">
+                <!-- Mistakes items inserted dynamically -->
+              </div>
+              <div class="char-status-breakdown">
+                <div class="char-stat-item">
+                  <span class="stat-bullet bullet-correct"></span>
+                  <span class="stat-text">Correct:</span>
+                  <span class="stat-num" id="stat-correct-chars">218</span>
+                </div>
+                <div class="char-stat-item">
+                  <span class="stat-bullet bullet-incorrect"></span>
+                  <span class="stat-text">Incorrect:</span>
+                  <span class="stat-num" id="stat-incorrect-chars">8</span>
+                </div>
+                <div class="char-stat-item">
+                  <span class="stat-bullet bullet-extra"></span>
+                  <span class="stat-text">Extra:</span>
+                  <span class="stat-num" id="stat-extra-chars">0</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- WEAK SPOTS SECTION -->
+            <div class="breakdown-block">
+              <div class="breakdown-title">Weak Spots</div>
+              <p class="weak-spots-desc">
+                Key transitions with highest latency or error rate:
+              </p>
+              <div class="weak-clusters-row" id="weak-spots-list">
+                <span class="weak-cluster">th</span>
+                <span class="weak-cluster">er</span>
+                <span class="weak-cluster">re</span>
+              </div>
+              <button
+                id="practice-weak-btn"
+                class="weak-practice-btn"
+                type="button"
+              >
+                Practice weak spots
+              </button>
+            </div>
+          </div>
+
+          <!-- RECENT SESSION HISTORY -->
+          <div class="recent-history-section">
+            <div class="recent-history-title">Recent Sessions</div>
+            <div class="recent-history-table" id="recent-history-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- RESULT ACTIONS -->
+          <div class="result-actions-row">
+            <button
+              id="result-restart-btn"
+              class="primary-action-btn"
+              type="button"
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"
+                />
+              </svg>
+              <span>Type Again</span>
+              <kbd class="btn-kbd">Tab + Enter</kbd>
+            </button>
+            <button
+              id="practice-mistakes-btn"
+              class="secondary-action-btn"
+              type="button"
+            >
+              Practice Mistakes Only
+            </button>
+          </div>
+        </section>
+      </main>
+
+      <!-- SETTINGS POPOVER (LIGHTWEIGHT PROTOTYPE) -->
+      <div
+        id="settings-popover"
+        class="settings-popover"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Shiftly Preferences"
+        style="display: none"
+      >
+        <div class="popover-header">
+          <span class="popover-title">Preferences</span>
+          <button
+            id="settings-close-btn"
+            class="popover-close-btn"
+            type="button"
+            aria-label="Close settings"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="popover-body">
+          <div class="pref-row">
+            <div class="pref-info">
+              <span class="pref-label">Font Family</span>
+              <span class="pref-desc">Typing area monospace font</span>
+            </div>
+            <select id="pref-font-select" class="pref-select">
+              <option value="jetbrains">JetBrains Mono</option>
+              <option value="system">System Monospace</option>
+            </select>
+          </div>
+
+          <div class="pref-row">
+            <div class="pref-info">
+              <span class="pref-label">Caret Style</span>
+              <span class="pref-desc">Cursor visual indicator</span>
+            </div>
+            <div class="pref-segmented" id="pref-caret-group">
+              <button class="seg-btn active" data-caret="bar">Line</button>
+              <button class="seg-btn" data-caret="block">Block</button>
+              <button class="seg-btn" data-caret="underline">Under</button>
+            </div>
+          </div>
+
+          <div class="pref-row">
+            <div class="pref-info">
+              <span class="pref-label">Sound Feedback</span>
+              <span class="pref-desc">Acoustic tactile response</span>
+            </div>
+            <div class="pref-segmented" id="pref-sound-group">
+              <button class="seg-btn" data-sound="off">Off</button>
+              <button class="seg-btn active" data-sound="tactile">
+                Mechanical
+              </button>
+              <button class="seg-btn" data-sound="soft">Soft</button>
+            </div>
+          </div>
+
+          <div class="pref-row">
+            <div class="pref-info">
+              <span class="pref-label">Key Shortcuts</span>
+              <span class="pref-desc">Quick navigation bindings</span>
+            </div>
+            <div class="shortcuts-legend">
+              <div><kbd>Tab</kbd> + <kbd>Enter</kbd> : Restart</div>
+              <div><kbd>Esc</kbd> : Pause / Blur</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOBILE EXPERIENCE NOTICE -->
+      <aside
+        id="mobile-notice"
+        class="mobile-notice"
+        role="note"
+        style="display: none"
+      >
+        <div class="mobile-notice-box">
+          <div class="mobile-notice-icon">⌨</div>
+          <h2 class="mobile-notice-title">Keyboard-First Experience</h2>
+          <p class="mobile-notice-text">
+            Shiftly is strictly optimized for physical tactile keyboards. For
+            standard speed measurement, please open on a laptop or desktop
+            computer.
+          </p>
+          <button
+            id="mobile-dismiss-btn"
+            class="mobile-preview-btn"
+            type="button"
+          >
+            Continue Prototype Preview
+          </button>
+        </div>
+      </aside>
+
+      <!-- DEVELOPER PROTOTYPE CONTROLS (Floating, clean, obvious) -->
+      <aside
+        class="dev-toolbar"
+        id="dev-toolbar"
+        aria-label="Developer prototype state switcher"
+      >
+        <div
+          class="dev-toolbar-handle"
+          id="dev-toolbar-toggle"
+          title="Developer state switcher"
+        >
+          <span class="dev-tag">PROTOTYPE</span>
+          <span class="dev-current-state" id="dev-current-state-label"
+            >Typing</span
+          >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <div class="dev-toolbar-panel" id="dev-toolbar-panel">
+          <div class="dev-panel-title">Visual State Switcher</div>
+          <div class="dev-buttons-row">
+            <button class="dev-btn active" id="dev-btn-typing" type="button">
+              1. Typing State
+            </button>
+            <button class="dev-btn" id="dev-btn-result" type="button">
+              2. Result State
+            </button>
+          </div>
+          <div class="dev-panel-divider"></div>
+          <div class="dev-panel-title">Mock Result Presets</div>
+          <div class="dev-buttons-row">
+            <button class="dev-preset-btn" id="dev-preset-mid" type="button">
+              72 WPM / 96%
+            </button>
+            <button class="dev-preset-btn" id="dev-preset-high" type="button">
+              108 WPM / 99%
+            </button>
+            <button
+              class="dev-preset-btn"
+              id="dev-preset-turbulent"
+              type="button"
+            >
+              54 WPM / 88%
+            </button>
+          </div>
+          <div class="dev-hint">
+            Tip: You can also type live on the screen or press
+            <kbd>Tab</kbd>+<kbd>Enter</kbd>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- MAIN JAVASCRIPT / TYPESCRIPT CONTROLLER -->
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
