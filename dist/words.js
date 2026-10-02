@@ -79,4 +79,9 @@ export function getRandomWords(count, pool = loadedWordPool) {
 export function getDynamicPassage(count = 90) {
     return getRandomWords(count);
 }
+export function getMistakePracticeWords(mistakePairs, count = 70) {
+    const targetCharacters = new Set(mistakePairs.flatMap((pair) => [...pair]).filter((char) => /[a-z]/i.test(char)));
+    const matchingWords = loadedWordPool.filter((word) => [...word].some((char) => targetCharacters.has(char)));
+    return getRandomWords(count, matchingWords.length > 0 ? matchingWords : loadedWordPool);
+}
 //# sourceMappingURL=words.js.map

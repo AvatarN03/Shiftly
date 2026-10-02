@@ -86,3 +86,17 @@ export function getRandomWords(count: number, pool = loadedWordPool): string[] {
 export function getDynamicPassage(count = 90): string[] {
   return getRandomWords(count);
 }
+
+export function getMistakePracticeWords(
+  mistakePairs: string[],
+  count = 70,
+): string[] {
+  const targetCharacters = new Set(
+    mistakePairs.flatMap((pair) => [...pair]).filter((char) => /[a-z]/i.test(char)),
+  );
+  const matchingWords = loadedWordPool.filter((word) =>
+    [...word].some((char) => targetCharacters.has(char)),
+  );
+
+  return getRandomWords(count, matchingWords.length > 0 ? matchingWords : loadedWordPool);
+}

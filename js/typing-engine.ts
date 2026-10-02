@@ -6,9 +6,12 @@ import { sound } from "./sound.js";
 
 import {
   getDynamicPassage,
+  getMistakePracticeWords,
   getRandomWords,
   WEAK_SPOTS_WORDS,
 } from "./words.js";
+
+type PracticeMode = "mistakes" | "weak" | null;
 
 export class TypingEngine {
   private wordsContainer: HTMLElement;
@@ -39,9 +42,6 @@ export class TypingEngine {
   private errorKeystrokes: number = 0;
   private mistakesMap: Map<string, number> = new Map(); // "expected->typed" -> count
   private wpmHistory: WpmPoint[] = [];
-
-  // Weak spots practice mode flag
-  private isWeakSpotsMode: boolean = false;
 
   constructor() {
     this.wordsContainer = document.getElementById("words-container")!;
@@ -154,7 +154,10 @@ export class TypingEngine {
     this.typingBox.classList.add("is-focused");
   }
 
-  public resetTest(weakSpotsOnly: boolean = false) {
+  public resetTest(
+    practiceMode: PracticeMode = null,
+    regenerateWords = true,
+  ) {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
       this.timerInterval = null;
@@ -166,7 +169,6 @@ export class TypingEngine {
     this.completionNotice.classList.remove("visible");
     this.completionNotice.setAttribute("aria-hidden", "true");
 
-    this.isWeakSpotsMode = weakSpotsOnly;
     this.isRunning = false;
     this.completionHandled = false;
     this.isCompleting = false;
@@ -183,17 +185,26 @@ export class TypingEngine {
     // Reset container scroll position
     this.wordsContainer.style.transform = "translateY(0px)";
 
-    // Initialize words
-    if (weakSpotsOnly) {
-      this.words = [...WEAK_SPOTS_WORDS, ...getRandomWords(30)];
-    } else if (appState.config.modeType === "words") {
-      this.words = getRandomWords(appState.config.wordsTarget + 10);
-      this.secondsRemaining = 0;
-    } else {
-      // Generate a fresh passage for every test. The vocabulary is loaded
-      // before TypingEngine is constructed, so the first visit is dynamic too.
-      this.words = getDynamicPassage(100);
-      this.secondsRemaining = appState.config.timeTarget;
+    this.secondsRemaining =
+      appState.config.modeType === "time" ? appState.config.timeTarget : 0;
+
+    // Timer changes reset the test state but intentionally retain the current
+    // wording. A normal restart or page load creates a new passage.
+    if (regenerateWords) {
+      if (practiceMode === "weak") {
+        this.words = [...WEAK_SPOTS_WORDS, ...getDynamicPassage(60)];
+      } else if (practiceMode === "mistakes") {
+        const mistakePairs = appState.lastResult?.mistakes.map(
+          (mistake) => `${mistake.expected}${mistake.typed}`,
+        ) ?? [];
+        this.words = getMistakePracticeWords(mistakePairs);
+      } else if (appState.config.modeType === "words") {
+        this.words = getRandomWords(appState.config.wordsTarget + 10);
+      } else {
+        // Generate a fresh passage for every test. The vocabulary is loaded
+        // before TypingEngine is constructed, so the first visit is dynamic too.
+        this.words = getDynamicPassage(100);
+      }
     }
 
     this.renderWordsDOM();

@@ -119,7 +119,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             appState.setTimeTarget(timeVal);
             sessionMetaMode.textContent = `${appState.config.timeTarget} seconds`;
             appState.setScreen("typing");
-            typingEngine.resetTest();
+            // Reset metrics and timer, but keep the current wording.
+            typingEngine.resetTest(null, false);
         });
     });
     // Words options (10, 25, 50, 100)
@@ -148,11 +149,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     practiceMistakesBtn.addEventListener("click", () => {
         appState.setScreen("typing");
-        typingEngine.resetTest(true);
+        typingEngine.resetTest("mistakes");
     });
     practiceWeakBtn.addEventListener("click", () => {
         appState.setScreen("typing");
-        typingEngine.resetTest(true);
+        typingEngine.resetTest("weak");
     });
     brandHome.addEventListener("click", (e) => {
         e.preventDefault();

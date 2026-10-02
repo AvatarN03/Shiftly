@@ -138,7 +138,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       sessionMetaMode.textContent = `${appState.config.timeTarget} seconds`;
 
       appState.setScreen("typing");
-      typingEngine.resetTest();
+      // Reset metrics and timer, but keep the current wording.
+      typingEngine.resetTest(null, false);
     });
   });
 
@@ -173,12 +174,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   practiceMistakesBtn.addEventListener("click", () => {
     appState.setScreen("typing");
-    typingEngine.resetTest(true);
+    typingEngine.resetTest("mistakes");
   });
 
   practiceWeakBtn.addEventListener("click", () => {
     appState.setScreen("typing");
-    typingEngine.resetTest(true);
+    typingEngine.resetTest("weak");
   });
 
   brandHome.addEventListener("click", (e) => {
