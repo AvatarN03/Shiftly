@@ -1,5 +1,5 @@
-import { appState } from './state';
-import { sound } from './sound';
+import { appState } from './state.js';
+import { sound } from './sound.js';
 
 export function setupSettings() {
   const popover = document.getElementById('settings-popover')!;

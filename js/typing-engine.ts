@@ -1,10 +1,10 @@
-import { MistakeDetail, SessionResult, WpmPoint } from "./types";
+import { MistakeDetail, SessionResult, WpmPoint } from "./types.js";
 
-import { appState } from "./state";
+import { appState } from "./state.js";
 
-import { sound } from "./sound";
+import { sound } from "./sound.js";
 
-import { getRandomWords, INITIAL_PASSAGE, WEAK_SPOTS_WORDS } from "./words";
+import { getRandomWords, INITIAL_PASSAGE, WEAK_SPOTS_WORDS } from "./words.js";
 
 export class TypingEngine {
   private wordsContainer: HTMLElement;

@@ -1,6 +1,6 @@
-import { SessionResult, WpmPoint } from "./types";
+import { SessionResult, WpmPoint } from "./types.js";
 
-import { appState } from "./state";
+import { appState } from "./state.js";
 
 
 export class ResultRenderer {

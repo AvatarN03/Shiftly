@@ -1,9 +1,9 @@
-import { TypingEngine } from "./typing-engine";
-import { ResultRenderer } from "./result-renderer";
-import { setupSettings } from "./settings";
-import { setupDevToolbar } from "./dev-toolbar";
-import { appState } from "./state";
-import { SessionResult } from "./types";
+import { TypingEngine } from "./typing-engine.js";
+import { ResultRenderer } from "./result-renderer.js";
+import { setupSettings } from "./settings.js";
+import { setupDevToolbar } from "./dev-toolbar.js";
+import { appState } from "./state.js";
+import { SessionResult } from "./types.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   // Initialize Core Engines
@@ -19,8 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Mode configuration elements
   const modeTypeGroup = document.getElementById("mode-type-group")!;
-  const timeOptionGroup = document.getElementById("time-option-group")!;
-  const wordsOptionGroup = document.getElementById("words-option-group")!;
+  const timeOptionGroup = document.getElementById("time-options-group")!;
+  const wordsOptionGroup = document.getElementById("words-options-group")!;
   const sessionMetaMode = document.getElementById("session-meta-mode")!;
 
   // Action buttons

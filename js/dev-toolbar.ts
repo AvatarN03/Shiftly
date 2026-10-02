@@ -1,8 +1,8 @@
-import { SessionResult, WpmPoint } from "./types";
+import { SessionResult, WpmPoint } from "./types.js";
 
-import { TypingEngine } from "./typing-engine";
+import { TypingEngine } from "./typing-engine.js";
 
-import { appState } from "./state";
+import { appState } from "./state.js";
 
 export function setupDevToolbar(engine: TypingEngine) {
   const toolbar = document.getElementById("dev-toolbar")!;

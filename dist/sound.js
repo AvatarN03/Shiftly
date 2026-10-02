@@ -1,0 +1,143 @@
+// High-fidelity Web Audio API synthesizer for mechanical tactile keyboard switches.
+class SoundEngine {
+    constructor() {
+        this.ctx = null;
+        this.isEnabled = true;
+        this.soundType = "tactile";
+        this.isUnlocked = false;
+        this.setupUnlockListeners();
+    }
+    setupUnlockListeners() {
+        if (typeof window === "undefined")
+            return;
+        const unlock = () => {
+            this.initCtx();
+            if (this.ctx && this.ctx.state === "suspended") {
+                this.ctx
+                    .resume()
+                    .then(() => {
+                    this.isUnlocked = true;
+                })
+                    .catch(() => { });
+            }
+            else if (this.ctx && this.ctx.state === "running") {
+                this.isUnlocked = true;
+            }
+        };
+        window.addEventListener("pointerdown", unlock, {
+            once: true,
+            passive: true,
+        });
+        window.addEventListener("keydown", unlock, { once: true, passive: true });
+    }
+    initCtx() {
+        if (!this.ctx && typeof window !== "undefined") {
+            const AudioCtx = window.AudioContext ||
+                window
+                    .webkitAudioContext;
+            if (AudioCtx) {
+                this.ctx = new AudioCtx();
+            }
+        }
+        if (this.ctx && this.ctx.state === "suspended") {
+            this.ctx.resume().catch(() => { });
+        }
+    }
+    setSound(sound) {
+        if (sound === "off") {
+            this.isEnabled = false;
+        }
+        else {
+            this.isEnabled = true;
+            this.soundType = sound;
+            this.initCtx();
+        }
+    }
+    getIsEnabled() {
+        return this.isEnabled;
+    }
+    getSoundType() {
+        return this.soundType;
+    }
+    playKeyClick() {
+        if (!this.isEnabled)
+            return;
+        this.initCtx();
+        if (!this.ctx)
+            return;
+        try {
+            const now = this.ctx.currentTime;
+            if (this.soundType === "tactile") {
+                // 1. Tactile snap click (high frequency chirp)
+                const snapOsc = this.ctx.createOscillator();
+                const snapGain = this.ctx.createGain();
+                snapOsc.type = "triangle";
+                // Subtle frequency pitch drop characteristic of mechanical stems
+                const basePitch = 1500 + Math.random() * 250;
+                snapOsc.frequency.setValueAtTime(basePitch, now);
+                snapOsc.frequency.exponentialRampToValueAtTime(320, now + 0.02);
+                snapGain.gain.setValueAtTime(0.18, now);
+                snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.022);
+                snapOsc.connect(snapGain);
+                snapGain.connect(this.ctx.destination);
+                snapOsc.start(now);
+                snapOsc.stop(now + 0.025);
+                // 2. Mechanical bottom-out body resonance (warm switch housing thud)
+                const bodyOsc = this.ctx.createOscillator();
+                const bodyGain = this.ctx.createGain();
+                bodyOsc.type = "sine";
+                bodyOsc.frequency.setValueAtTime(140 + Math.random() * 20, now + 0.005);
+                bodyOsc.frequency.exponentialRampToValueAtTime(60, now + 0.04);
+                bodyGain.gain.setValueAtTime(0.14, now + 0.005);
+                bodyGain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+                bodyOsc.connect(bodyGain);
+                bodyGain.connect(this.ctx.destination);
+                bodyOsc.start(now + 0.005);
+                bodyOsc.stop(now + 0.05);
+            }
+            else {
+                // Soft quiet switch sound
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(380, now);
+                osc.frequency.exponentialRampToValueAtTime(90, now + 0.03);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.035);
+            }
+        }
+        catch {
+            // Audio context error or browser restriction fallback
+        }
+    }
+    playErrorClick() {
+        if (!this.isEnabled)
+            return;
+        this.initCtx();
+        if (!this.ctx)
+            return;
+        try {
+            const now = this.ctx.currentTime;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(260, now);
+            osc.frequency.setValueAtTime(180, now + 0.05);
+            gain.gain.setValueAtTime(0.16, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.065);
+        }
+        catch {
+            // Ignore audio error
+        }
+    }
+}
+export const sound = new SoundEngine();
+//# sourceMappingURL=sound.js.map

@@ -3,7 +3,7 @@ import {
   TestConfig,
   UserPerferences,
   SessionResult,
-} from "./types";
+} from "./types.js";
 
 export interface HistoryItem {
   id: string;
