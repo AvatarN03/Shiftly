@@ -44,15 +44,15 @@ shiftly-2.0/
 │   ├── settings.css            # Preferences popover, mobile notice modal
 │   └── dev-toolbar.css         # Developer prototype switcher & preset loader
 └── js/
-    ├── types.js                # Data models & interfaces
-    ├── words.js                # Vocabulary pools, initial passage, weak-spot words
-    ├── sound.js                # Web Audio API mechanical switch synthesizer
-    ├── state.js                # Reactive store (screen state, test config, history)
-    ├── typing-engine.js        # Keystroke engine, 3-line scroll, live stats, timer
-    ├── result-renderer.js      # Result view population & SVG technical chart
-    ├── settings.js             # Preferences popover & mobile viewport handler
-    ├── dev-toolbar.js          # Developer state toggle & preset simulation
-    └── main.js                 # Application bootstrap & event delegation
+  ├── types.ts                # Data models & interfaces
+  ├── words.ts                # Vocabulary pools, initial passage, weak-spot words
+  ├── sound.ts                # Web Audio API mechanical switch synthesizer
+  ├── state.ts                # Reactive store (screen state, test config, history)
+  ├── typing-engine.ts        # Keystroke engine, 3-line scroll, live stats, timer
+  ├── result-renderer.ts      # Result view population & SVG technical chart
+  ├── settings.ts             # Preferences popover & mobile viewport handler
+  ├── dev-toolbar.ts          # Developer state toggle & preset simulation
+  └── main.ts                 # Application bootstrap & event delegation
 ```
 
 ---

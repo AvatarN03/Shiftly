@@ -33,16 +33,16 @@ Shiftly/
 │   ├── result.css
 │   ├── settings.css
 │   └── dev-toolbar.css
-├── js/                 # Empty implementation modules to be authored
-│   ├── types.js
-│   ├── words.js
-│   ├── sound.js
-│   ├── state.js
-│   ├── typing-engine.js
-│   ├── result-renderer.js
-│   ├── settings.js
-│   ├── dev-toolbar.js
-│   └── main.js
+├── js/                 # TypeScript implementation modules
+│   ├── types.ts
+│   ├── words.ts
+│   ├── sound.ts
+│   ├── state.ts
+│   ├── typing-engine.ts
+│   ├── result-renderer.ts
+│   ├── settings.ts
+│   ├── dev-toolbar.ts
+│   └── main.ts
 ├── assets/             # Icons and images
 ├── AGENT.md            # Shiftly 2.0 engineering specification
 └── README.md           # Project documentation
@@ -54,7 +54,7 @@ Shiftly/
 
 - **HTML5** – UI structure
 - **CSS3** – Styling, layout, responsiveness
-- **JavaScript (Vanilla JS)** – Logic, timers, input handling, scoring
+- **TypeScript** – Logic, timers, input handling, and scoring
 - **LocalStorage** – Score persistence
 
 ---
