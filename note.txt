@@ -1,156 +1,196 @@
-// High-fidelity Web Audio API synthesizer for mechanical tactile keyboard switches
-class SoundEngine {
-  private ctx: AudioContext | null = null;
-  private isEnabled: boolean = true;
-  private soundType: 'tactile' | 'soft' = 'tactile';
-  private isUnlocked: boolean = false;
+import { appState } from './state';
+import { TypingEngine } from './typing-engine';
+import { ResultRenderer } from './result-renderer';
+import { setupSettings } from './settings';
+import { setupDevToolbar } from './dev-toolbar';
+import { SessionResult } from './types';
 
-  constructor() {
-    this.setupUnlockListeners();
-  }
+document.addEventListener('DOMContentLoaded', () => {
+  // Initialize Core Engines
+  const typingEngine = new TypingEngine();
+  const resultRenderer = new ResultRenderer();
+  setupSettings();
+  setupDevToolbar(typingEngine);
 
-  private setupUnlockListeners() {
-    if (typeof window === 'undefined') return;
+  // Screen state containers
+  const typingStateEl = document.getElementById('typing-state')!;
+  const resultStateEl = document.getElementById('result-state')!;
 
-    const unlock = () => {
-      this.initCtx();
-      if (this.ctx && this.ctx.state === 'suspended') {
-        this.ctx.resume().then(() => {
-          this.isUnlocked = true;
-        }).catch(() => {});
-      } else if (this.ctx && this.ctx.state === 'running') {
-        this.isUnlocked = true;
-      }
-    };
+  // Mode configuration elements
+  const modeTypeGroup = document.getElementById('mode-type-group')!;
+  const timeOptionsGroup = document.getElementById('time-options-group')!;
+  const wordsOptionsGroup = document.getElementById('words-options-group')!;
+  const sessionMetaMode = document.getElementById('session-meta-mode')!;
 
-    window.addEventListener('pointerdown', unlock, { once: true, passive: true });
-    window.addEventListener('keydown', unlock, { once: true, passive: true });
-  }
+  // Action buttons
+  const restartBtn = document.getElementById('restart-btn')!;
+  const resultRestartBtn = document.getElementById('result-restart-btn')!;
+  const practiceMistakesBtn = document.getElementById('practice-mistakes-btn')!;
+  const practiceWeakBtn = document.getElementById('practice-weak-btn')!;
+  const brandHome = document.getElementById('brand-home')!;
 
-  private initCtx() {
-    if (!this.ctx && typeof window !== 'undefined') {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (AudioCtx) {
-        this.ctx = new AudioCtx();
-      }
-    }
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume().catch(() => {});
-    }
-  }
+  // Initialize with initial mock result so result screen is fully ready if previewed immediately
+  const initialDefaultResult: SessionResult = {
+    netWpm: 72,
+    rawWpm: 78.2,
+    accuracy: 96.4,
+    correctChars: 218,
+    incorrectChars: 8,
+    extraChars: 0,
+    consistency: 83,
+    durationSec: 30,
+    modeLabel: '30s',
+    wpmHistory: [
+      { time: 0, wpm: 65, rawWpm: 70, errors: 0 },
+      { time: 5, wpm: 74, rawWpm: 79, errors: 0 },
+      { time: 10, wpm: 71, rawWpm: 77, errors: 1 },
+      { time: 15, wpm: 76, rawWpm: 81, errors: 0 },
+      { time: 20, wpm: 73, rawWpm: 78, errors: 1 },
+      { time: 25, wpm: 70, rawWpm: 76, errors: 0 },
+      { time: 30, wpm: 72, rawWpm: 78, errors: 0 },
+    ],
+    mistakes: [
+      { expected: 'e', typed: 'r', count: 3 },
+      { expected: 't', typed: 'y', count: 2 },
+      { expected: 'a', typed: 's', count: 2 },
+    ],
+    weakSpots: ['th', 'er', 're'],
+    timestamp: new Date()
+  };
+  appState.lastResult = initialDefaultResult;
 
-  public setSound(sound: 'off' | 'tactile' | 'soft') {
-    if (sound === 'off') {
-      this.isEnabled = false;
+  // React to screen state changes
+  function updateScreenVisibility() {
+    if (appState.screen === 'typing') {
+      resultStateEl.style.display = 'none';
+      resultStateEl.classList.remove('active');
+
+      typingStateEl.style.display = 'block';
+      requestAnimationFrame(() => {
+        typingStateEl.classList.add('active');
+        typingEngine.focusInput();
+      });
     } else {
-      this.isEnabled = true;
-      this.soundType = sound;
-      this.initCtx();
-    }
-  }
+      typingStateEl.style.display = 'none';
+      typingStateEl.classList.remove('active');
 
-  public getIsEnabled(): boolean {
-    return this.isEnabled;
-  }
-
-  public getSoundType(): 'tactile' | 'soft' {
-    return this.soundType;
-  }
-
-  public playKeyClick() {
-    if (!this.isEnabled) return;
-    this.initCtx();
-    if (!this.ctx) return;
-
-    try {
-      const now = this.ctx.currentTime;
-
-      if (this.soundType === 'tactile') {
-        // 1. Tactile snap click (high frequency chirp)
-        const snapOsc = this.ctx.createOscillator();
-        const snapGain = this.ctx.createGain();
-
-        snapOsc.type = 'triangle';
-        // Subtle frequency pitch drop characteristic of mechanical stems
-        const basePitch = 1500 + Math.random() * 250;
-        snapOsc.frequency.setValueAtTime(basePitch, now);
-        snapOsc.frequency.exponentialRampToValueAtTime(320, now + 0.02);
-
-        snapGain.gain.setValueAtTime(0.18, now);
-        snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.022);
-
-        snapOsc.connect(snapGain);
-        snapGain.connect(this.ctx.destination);
-
-        snapOsc.start(now);
-        snapOsc.stop(now + 0.025);
-
-        // 2. Mechanical bottom-out body resonance (warm switch housing thud)
-        const bodyOsc = this.ctx.createOscillator();
-        const bodyGain = this.ctx.createGain();
-
-        bodyOsc.type = 'sine';
-        bodyOsc.frequency.setValueAtTime(140 + Math.random() * 20, now + 0.005);
-        bodyOsc.frequency.exponentialRampToValueAtTime(60, now + 0.04);
-
-        bodyGain.gain.setValueAtTime(0.14, now + 0.005);
-        bodyGain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
-
-        bodyOsc.connect(bodyGain);
-        bodyGain.connect(this.ctx.destination);
-
-        bodyOsc.start(now + 0.005);
-        bodyOsc.stop(now + 0.05);
-
-      } else {
-        // Soft quiet switch sound
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(380, now);
-        osc.frequency.exponentialRampToValueAtTime(90, now + 0.03);
-
-        gain.gain.setValueAtTime(0.12, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
-
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-
-        osc.start(now);
-        osc.stop(now + 0.035);
+      if (appState.lastResult) {
+        resultRenderer.render(appState.lastResult);
       }
-    } catch {
-      // Audio context error or browser restriction fallback
+      resultStateEl.style.display = 'block';
+      requestAnimationFrame(() => {
+        resultStateEl.classList.add('active');
+      });
     }
   }
 
-  public playErrorClick() {
-    if (!this.isEnabled) return;
-    this.initCtx();
-    if (!this.ctx) return;
+  appState.subscribe(() => {
+    updateScreenVisibility();
+  });
 
-    try {
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
+  // Mode Type toggle (Time vs Words)
+  modeTypeGroup.querySelectorAll('.config-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      modeTypeGroup.querySelectorAll('.config-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
 
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(260, now);
-      osc.frequency.setValueAtTime(180, now + 0.05);
+      const modeType = btn.getAttribute('data-type') as 'time' | 'words';
+      appState.setModeType(modeType);
 
-      gain.gain.setValueAtTime(0.16, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      if (modeType === 'time') {
+        timeOptionsGroup.style.display = 'flex';
+        wordsOptionsGroup.style.display = 'none';
+        sessionMetaMode.textContent = `${appState.config.timeTarget} seconds`;
+      } else {
+        timeOptionsGroup.style.display = 'none';
+        wordsOptionsGroup.style.display = 'flex';
+        sessionMetaMode.textContent = `${appState.config.wordsTarget} words`;
+      }
 
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      appState.setScreen('typing');
+      typingEngine.resetTest();
+    });
+  });
 
-      osc.start(now);
-      osc.stop(now + 0.065);
-    } catch {
-      // Ignore audio error
+  // Time options (15s, 30s, 60s, 120s)
+  timeOptionsGroup.querySelectorAll('.config-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      timeOptionsGroup.querySelectorAll('.config-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+
+      const timeVal = parseInt(btn.getAttribute('data-time') || '30', 10);
+      appState.setTimeTarget(timeVal);
+      sessionMetaMode.textContent = `${timeVal} seconds`;
+
+      appState.setScreen('typing');
+      typingEngine.resetTest();
+    });
+  });
+
+  // Words options (25, 50, 100)
+  wordsOptionsGroup.querySelectorAll('.config-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      wordsOptionsGroup.querySelectorAll('.config-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+
+      const wordsVal = parseInt(btn.getAttribute('data-words') || '50', 10);
+      appState.setWordsTarget(wordsVal);
+      sessionMetaMode.textContent = `${wordsVal} words`;
+
+      appState.setScreen('typing');
+      typingEngine.resetTest();
+    });
+  });
+
+  // Restart Actions
+  restartBtn.addEventListener('click', () => {
+    typingEngine.resetTest();
+  });
+
+  resultRestartBtn.addEventListener('click', () => {
+    appState.setScreen('typing');
+    typingEngine.resetTest();
+  });
+
+  practiceMistakesBtn.addEventListener('click', () => {
+    appState.setScreen('typing');
+    typingEngine.resetTest(true);
+  });
+
+  practiceWeakBtn.addEventListener('click', () => {
+    appState.setScreen('typing');
+    typingEngine.resetTest(true);
+  });
+
+  brandHome.addEventListener('click', (e) => {
+    e.preventDefault();
+    appState.setScreen('typing');
+    typingEngine.resetTest();
+  });
+
+  // Global Tab key handling on Result screen
+  window.addEventListener('keydown', (e) => {
+    if (appState.screen === 'result') {
+      if (e.key === 'Tab' || e.key === 'Enter') {
+        e.preventDefault();
+        appState.setScreen('typing');
+        typingEngine.resetTest();
+      }
     }
-  }
-}
+  });
 
-export const sound = new SoundEngine();
+  // Initial render
+  updateScreenVisibility();
+});
