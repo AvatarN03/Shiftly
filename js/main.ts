@@ -5,12 +5,15 @@ import { appState } from "./state.js";
 import { SessionResult } from "./types.js";
 import { loadWordList } from "./words.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   // Initialize Core Engines
 
+  // Load the expanded vocabulary before the first passage is generated.
+  // This keeps the initial page visit dynamic instead of showing the same
+  // hard-coded paragraph every time.
+  await loadWordList();
   const typingEngine = new TypingEngine();
   const resultRenderer = new ResultRenderer();
-  void loadWordList();
   setupSettings();
 
   //Screen state containers

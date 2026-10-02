@@ -63,10 +63,20 @@ export async function loadWordList() {
 }
 export function getRandomWords(count, pool = loadedWordPool) {
     const result = [];
+    let previousWord = "";
     for (let i = 0; i < count; i++) {
-        const randomIndex = Math.floor(Math.random() * pool.length);
-        result.push(pool[randomIndex]);
+        let word = pool[Math.floor(Math.random() * pool.length)];
+        if (pool.length > 1) {
+            while (word === previousWord) {
+                word = pool[Math.floor(Math.random() * pool.length)];
+            }
+        }
+        result.push(word);
+        previousWord = word;
     }
     return result;
+}
+export function getDynamicPassage(count = 90) {
+    return getRandomWords(count);
 }
 //# sourceMappingURL=words.js.map

@@ -1,6 +1,6 @@
 import { appState } from "./state.js";
 import { sound } from "./sound.js";
-import { getRandomWords, INITIAL_PASSAGE, WEAK_SPOTS_WORDS } from "./words.js";
+import { getDynamicPassage, getRandomWords, WEAK_SPOTS_WORDS, } from "./words.js";
 export class TypingEngine {
     constructor() {
         this.caretEl = null;
@@ -15,6 +15,7 @@ export class TypingEngine {
         this.timerInterval = null;
         this.completionTimeout = null;
         this.completionHandled = false;
+        this.isCompleting = false;
         this.secondsRemaining = 30;
         this.totalTypedKeystrokes = 0;
         this.correctKeystrokes = 0;
@@ -110,6 +111,8 @@ export class TypingEngine {
         });
     }
     focusInput() {
+        if (this.isCompleting)
+            return;
         this.hiddenInput.value = "";
         this.hiddenInput.focus();
         this.typingBox.classList.add("is-focused");
@@ -128,6 +131,7 @@ export class TypingEngine {
         this.isWeakSpotsMode = weakSpotsOnly;
         this.isRunning = false;
         this.completionHandled = false;
+        this.isCompleting = false;
         this.startTime = 0;
         this.currentWordIdx = 0;
         this.currentCharIdx = 0;
@@ -148,8 +152,9 @@ export class TypingEngine {
             this.secondsRemaining = 0;
         }
         else {
-            // Default: Initial natural passage + additional random words
-            this.words = [...INITIAL_PASSAGE, ...getRandomWords(50)];
+            // Generate a fresh passage for every test. The vocabulary is loaded
+            // before TypingEngine is constructed, so the first visit is dynamic too.
+            this.words = getDynamicPassage(100);
             this.secondsRemaining = appState.config.timeTarget;
         }
         this.renderWordsDOM();
@@ -243,6 +248,8 @@ export class TypingEngine {
         }, 1000);
     }
     handleCharacter(typedChar) {
+        if (this.isCompleting)
+            return;
         const currentWord = this.words[this.currentWordIdx];
         if (!currentWord)
             return;
@@ -286,6 +293,8 @@ export class TypingEngine {
         this.updateLiveStats();
     }
     handleBackspace(deleteWord) {
+        if (this.isCompleting)
+            return;
         const currentWordEl = this.getWordEl(this.currentWordIdx);
         if (!currentWordEl)
             return;
@@ -346,6 +355,8 @@ export class TypingEngine {
         }
     }
     handleSpace() {
+        if (this.isCompleting)
+            return;
         const currentWord = this.words[this.currentWordIdx];
         if (!currentWord)
             return;
@@ -490,6 +501,7 @@ export class TypingEngine {
             return;
         }
         this.completionHandled = true;
+        this.isCompleting = true;
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
             this.timerInterval = null;
