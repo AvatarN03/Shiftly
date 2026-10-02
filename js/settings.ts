@@ -41,14 +41,26 @@ export function setupSettings() {
   });
 
   // Font family selector
-  fontSelect.addEventListener('change', () => {
-    const font = fontSelect.value;
-    if (font === 'system') {
-      wordsContainer.style.fontFamily = 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
-    } else {
-      wordsContainer.style.fontFamily = "var(--font-mono)";
-    }
-  });
+  const fontStacks: Record<string, string> = {
+    jetbrains: '"JetBrains Mono", monospace',
+    'fira-code': '"Fira Code", monospace',
+    'source-code-pro': '"Source Code Pro", monospace',
+    'roboto-mono': '"Roboto Mono", monospace',
+    inconsolata: 'Inconsolata, monospace',
+    'space-mono': '"Space Mono", monospace',
+    'cascadia-code': '"Cascadia Code", "Cascadia Mono", monospace',
+    system: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+  };
+
+  const applyFont = (font: string) => {
+    const selectedFont = font in fontStacks ? font : 'jetbrains';
+    appState.preferences.fontFamily = selectedFont as typeof appState.preferences.fontFamily;
+    wordsContainer.style.fontFamily = fontStacks[selectedFont];
+    fontSelect.value = selectedFont;
+  };
+
+  fontSelect.addEventListener('change', () => applyFont(fontSelect.value));
+  applyFont(appState.preferences.fontFamily);
 
   // Caret style segmented control
   caretGroup.querySelectorAll('.seg-btn').forEach(btn => {

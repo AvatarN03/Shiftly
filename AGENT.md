@@ -1,340 +1,79 @@
-# AGENT.MD — Shiftly 2.0 Engineering Specification & Blueprint
+# Shifty engineering notes
 
-This document is the authoritative engineering specification and implementation blueprint for **Shiftly 2.0**, a minimalist, developer-oriented typing speed application.
+This file is the implementation guide for agents working on Shifty, a minimalist keyboard-first typing speed test.
 
-When building or refactoring this application with an LLM coding assistant, follow every rule, algorithm, formula, and visual contract detailed in this document to achieve the exact outcome.
+## Product direction
 
----
+- Keep the interface calm, technical, compact, and keyboard-first.
+- Preserve the dark canvas, warm amber accent, monospace typing area, and clean unboxed information hierarchy.
+- The main application has two screen states: typing and result.
+- Do not reintroduce prototype-only state switchers, mock-result controls, or developer toolbar UI into the production page.
 
-## 1. Core Product Direction & Identity
+## Runtime and build
 
-* **Philosophy**: Minimalist, technical, calm, keyboard-first, distraction-free.
-* **Domain Aesthetic**: Developer tool / high-precision instrument.
-* **Anti-Slop Strict Rules**:
-  * **NO** AI-style purple gradients, glassmorphism, floating cards-within-cards, or arbitrary scoreboards.
-  * **NO** pill-badge sandwiches on metadata; metadata uses clean inline typographic separators (`·`).
-  * **NO** traditional multi-page website structures; single-screen viewport with instantaneous transition between **Typing State** and **Result State**.
-  * The typing text **sits directly on the background canvas** (no bounding cards, no borders around the text area).
+- The source language is TypeScript with native ES modules.
+- `index.html` loads compiled browser modules from `dist/main.js`.
+- Source files live in `js/`; generated browser files live in `dist/`.
+- Local imports in TypeScript use `.js` extensions so emitted modules resolve in browsers.
+- Build with `npm run build` and type-check with `npm run check`.
+- Serve through HTTP during development. Direct `file://` loading is not a reliable way to run module imports and JSON fetches.
 
----
+## File responsibilities
 
-## 2. Technology Stack & Zero-Dependency Rule
+- `js/main.ts`: creates engines, wires configuration controls, and switches typing/result visibility.
+- `js/typing-engine.ts`: owns the hidden input, word DOM, caret, timer, keystroke counters, scoring, and session completion.
+- `js/result-renderer.ts`: fills result metrics, mistake/weak-spot lists, history, and the SVG speed-stability chart.
+- `js/words.ts`: owns the starter passage, fallback list, asynchronous JSON loading, validation, and local random-word generation.
+- `js/settings.ts`: owns preferences, font selection, caret styles, sound toggles, and mobile handling.
+- `js/sound.ts`: owns browser-native Web Audio key, error, and session-completion sounds.
+- `js/state.ts`: owns screen state, test configuration, preferences, session result, and recent history.
+- `js/types.ts`: shared type definitions.
+- `data/words-common.json`: expandable common-word data source. Keep values lowercase and alphabetic.
+- `css/`: modular visual styles. `css/index.css` is the import entry point.
+- `assets/shifty-lockup.svg`: transparent header logo.
 
-* **Markup**: Semantic HTML5.
-* **Styling**: Pure CSS3 with CSS Custom Properties (Variables), Flexbox, CSS Grid. Zero component libraries, zero Tailwind.
-* **Scripting**: Pure Vanilla JavaScript (ES2022+ native ES Modules) or TypeScript without runtime dependencies.
-* **Audio**: Browser-native Web Audio API synthesizer (no external audio assets or network requests).
-* **Fonts**:
-  * Interface: Clean modern sans-serif (`'Plus Jakarta Sans'`, `-apple-system`, `sans-serif`).
-  * Typing Text & Metrics: Monospace with tabular numerals (`'JetBrains Mono'`, `'IBM Plex Mono'`, `monospace`).
+## Session behavior
 
----
+The timer must not start on page load, focus, or modifier/navigation keys. It starts on the first valid printable character. Time mode decrements once per second; words mode completes after the configured word count.
 
-## 3. Recommended Folder & File Structure
+When a session ends:
 
-```text
-shiftly-2.0/
-├── index.html                  # Semantic application shell & state containers
-├── css/
-│   ├── variables.css           # Color tokens, typography, radii, transitions
-│   ├── base.css                # Box-sizing, reset, tabular numerals, kbd styling
-│   ├── shell.css               # Header branding, minimal config bar, viewport layout
-│   ├── typing.css              # Live stats, 3-line word box, caret, focus overlay
-│   ├── result.css              # Hero WPM, metrics row, SVG speed graph, mistakes, history
-│   ├── settings.css            # Preferences popover, mobile notice modal
-│   └── dev-toolbar.css         # Developer prototype switcher & preset loader
-└── js/
-  ├── types.ts                # Data models & interfaces
-  ├── words.ts                # Vocabulary pools, initial passage, weak-spot words
-  ├── sound.ts                # Web Audio API mechanical switch synthesizer
-  ├── state.ts                # Reactive store (screen state, test config, history)
-  ├── typing-engine.ts        # Keystroke engine, 3-line scroll, live stats, timer
-  ├── result-renderer.ts      # Result view population & SVG technical chart
-  ├── settings.ts             # Preferences popover & mobile viewport handler
-  ├── dev-toolbar.ts          # Developer state toggle & preset simulation
-  └── main.ts                 # Application bootstrap & event delegation
-```
+1. Stop and clear the timer.
+2. Stop accepting typing input.
+3. Build and store the session result.
+4. Play the completion cue when sound is enabled.
+5. Show `#session-complete-notice` with an assertive live-region status.
+6. Transition to the result state after the short notification delay.
 
----
+Do not make the transition immediate again unless the completion cue remains accessible.
 
-## 4. Visual Tokens & Color Palette
+## Word loading rules
 
-```css
-:root {
-  /* Canvas & Structural Surfaces */
-  --bg-primary: #121212;
-  --bg-secondary: #171717;
-  --bg-hover: #222222;
-  --bg-card: #1a1a1a;
+The app must remain usable before or without the JSON request. `COMMON_WORDS` is the fallback. `loadWordList()` fetches `data/words-common.json`, validates strings with lowercase alphabetic characters, removes duplicates, and merges the result into the generation pool. Words are generated locally during a test; do not make a per-word API request.
 
-  /* Typography */
-  --text-primary: #f5f5f5;      /* Correct typed characters & hero metrics */
-  --text-secondary: #9e9e9e;    /* Labels, inactive buttons, stats units */
-  --text-tertiary: #757575;     /* Footers, kickers, timestamps */
-  --text-dim: #484848;
+## Result chart rules
 
-  /* Accent: Warm Amber / Shiftly Identity */
-  --accent: #f59e0b;
-  --accent-hover: #fbbf24;
-  --accent-muted: rgba(245, 158, 11, 0.14);
-  --accent-glow: rgba(245, 158, 11, 0.3);
+- The chart is an SVG with a `680 x 280` viewBox.
+- The outer chart container is intentionally tall enough for readable levels and labels.
+- Net WPM uses the solid amber line.
+- Raw WPM uses a subtle dashed line.
+- Error samples use red markers.
+- Horizontal WPM grid levels and numeric labels should remain legible when chart dimensions change.
 
-  /* Status Signaling */
-  --color-correct: #ffffff;
-  --color-incorrect: #f87171;
-  --color-incorrect-bg: rgba(248, 113, 113, 0.2);
-  --color-untyped: #7c7c7c;     /* High contrast readability on dark canvas */
+## Branding and accessibility
 
-  /* Hairlines */
-  --border-subtle: rgba(255, 255, 255, 0.12);
-  --border-focus: rgba(245, 158, 11, 0.5);
+- The product name is Shifty, never Shiftly.
+- Use `assets/shifty-lockup.svg` rather than recreating the logo in text.
+- Keep meaningful `alt`, `aria-label`, `role`, and live-region attributes when editing controls.
+- Avoid removing keyboard focus behavior or the visible completion notification.
 
-  /* Dimensions */
-  --container-max-w: 960px;
-  --typing-line-height: 48px;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-}
-```
+## Verification checklist
 
----
+After changes:
 
-## 5. Screen State Machine
-
-Shiftly has exactly **two primary visual states** contained within `<main class="app-viewport">`:
-
-```
-               [ User presses key / Types first letter ]
- [ TYPING STATE ] ──────────────────────────────────────> [ ACTIVE TEST ]
-        ▲                                                        │
-        │ [ Tab + Enter / Restart ]                              │ [ Time reaches 0s / Words completed ]
-        │                                                        ▼
-        └────────────────────────────────────────────── [ RESULT STATE ]
-```
-
-### State 1: Typing Screen (`#typing-state`)
-1. **Live Stats Bar**:
-   * Timer countdown (`38px` bold amber with text shadow glow).
-   * Live WPM (`24px` medium white).
-   * Live Accuracy % (`24px` medium white).
-2. **Typing Container (`.typing-box`)**:
-   * **Strict 3-Line Window**: `height: 146px; max-height: 146px; overflow: hidden; position: relative;`
-   * **Words Wrapper (`.words-wrapper`)**: Flex wrap, `gap: 0 16px; font-size: 26px; line-height: 48px;`
-   * **Active Caret (`.caret`)**: `3px` width, `32px` height, `#f59e0b`, smooth blinking when idle.
-   * **Focus Hint**: Floating pill ("Click or start typing to focus") visible only when input is blurred. No blur filter applied to the words.
-3. **Restart Row**:
-   * Minimal button `↻ Restart` with keyboard subhint: `Press Tab + Enter to restart anytime`.
-4. **Metadata Footer**:
-   * Quiet unboxed inline text: `30 seconds · English · No punctuation`.
-
-### State 2: Result Screen (`#result-state`)
-1. **Header Kicker**: `SESSION COMPLETE`.
-2. **Primary Result Cluster**:
-   * Prominent Net WPM (`76px` bold amber).
-   * Accuracy percentage line (`19px`, e.g. `96.4% accuracy`).
-3. **Analytical Metrics Row (Tabular Numerals)**:
-   * `Raw WPM` | `Characters (Correct / Incorrect)` | `Consistency %` | `Time (s)`.
-   * Unboxed or single clean border container; no separate cards per metric.
-4. **Technical SVG Speed Stability Graph**:
-   * `680x150` SVG coordinate space.
-   * Solid amber line for Net WPM over time.
-   * Subtle dashed line (`rgba(255,255,255,0.3)`) for Raw WPM.
-   * Error dots (`#f87171`) pinned to seconds where errors occurred.
-   * Horizontal dashed gridlines at 30 WPM intervals with numerical Y-axis labels.
-   * X-axis timestamps (`0s`, `10s`, `20s`, `30s`).
-5. **Detailed Breakdown**:
-   * **Mistakes List**: Specific character replacement mappings (e.g. `e → r (3 mistakes)`).
-   * **Character Stats**: Counts of Correct, Incorrect, and Extra characters.
-   * **Weak Spots**: 2-character transition clusters (e.g. `th`, `er`, `re`) with a `[ Practice weak spots ]` action.
-6. **Recent Sessions History**:
-   * Compact table listing the last 3-5 sessions (`Mode · WPM · Acc · Time`).
-7. **Action Triggers**:
-   * Primary: `Type Again` (`Tab + Enter`).
-   * Secondary: `Practice Mistakes Only`.
-
----
-
-## 6. Exact Behavioral Algorithms & Formulas
-
-### 6.1 Timer Trigger Rule (Critical)
-* The countdown timer **MUST NOT** start when:
-  * The page loads.
-  * The input receives focus.
-  * The user presses `Shift`, `Ctrl`, `Alt`, `Meta`, `CapsLock`, `Tab`, `Escape`, arrow keys, or functional keys.
-* The timer **STRICTLY STARTS** on the **first valid printable character** received:
-  ```javascript
-  if (!this.isRunning && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-    this.startSession();
-  }
-  ```
-
-### 6.2 Strict 3-Line Viewport Scrolling
-* To ensure only 3 lines are visible at any time:
-  ```javascript
-  const wordTop = currentWordEl.offsetTop;
-  const lineH = 48; // exact line height in pixels
-  const lineIndex = Math.floor(wordTop / lineH);
-
-  if (lineIndex > 1) {
-    const scrollY = (lineIndex - 1) * lineH;
-    this.wordsContainer.style.transform = `translateY(-${scrollY}px)`;
-  } else {
-    this.wordsContainer.style.transform = 'translateY(0px)';
-  }
-  ```
-* Caret coordinates relative to container:
-  ```javascript
-  const containerRect = this.wordsContainer.getBoundingClientRect();
-  const charRect = charEl.getBoundingClientRect();
-  const left = charRect.left - containerRect.left;
-  const top = charRect.top - containerRect.top;
-
-  this.caretEl.style.left = `${left}px`;
-  this.caretEl.style.top = `${top + (charRect.height - 32) / 2}px`;
-  this.caretEl.style.height = '32px';
-  ```
-
-### 6.3 Backspace & Word Deletion Specification
-* **Single Backspace (`deleteWord: false`)**:
-  * If `currentCharIdx > 0`: reverts the last typed character in the active word.
-  * If `currentCharIdx === 0`: **STAYS at the start of current word**. Never automatically jumps back to previous word.
-* **Word Deletion (`Ctrl + Backspace` / `Alt + Backspace` / `Delete`)**:
-  * If `currentCharIdx > 0`: clears all characters in the current word back to index 0.
-  * If `currentCharIdx === 0` and `currentWordIdx > 0`: moves back to the previous word and clears it completely for retyping.
-* **Keystroke Counters Maintenance**:
-  * When `revertLastChar()` is executed, decrement `totalTypedKeystrokes` and whichever counter (`correctKeystrokes` or `errorKeystrokes`) applied to that character.
-
-### 6.4 Metrics Formulas
-```javascript
-// Net WPM (standard 5 characters = 1 word)
-const elapsedMin = elapsedSeconds / 60;
-const netWpm = Math.max(0, Math.round((correctKeystrokes / 5) / elapsedMin));
-
-// Raw WPM (including errors)
-const rawWpm = Number(((totalTypedKeystrokes / 5) / elapsedMin).toFixed(1));
-
-// Accuracy
-const accuracy = totalTypedKeystrokes > 0
-  ? Number(((correctKeystrokes / totalTypedKeystrokes) * 100).toFixed(1))
-  : 100;
-
-// Consistency (% coefficient of variation of 1-second WPM samples)
-const speeds = wpmHistory.map(p => p.wpm);
-const mean = speeds.reduce((a, b) => a + b, 0) / speeds.length;
-const variance = speeds.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / speeds.length;
-const cv = mean > 0 ? (Math.sqrt(variance) / mean) : 0;
-const consistency = Math.max(40, Math.min(99, Math.round(100 - (cv * 100))));
-```
-
----
-
-## 7. Web Audio Synthesizer Implementation
-
-Implement realistic tactile mechanical key feedback without external audio files:
-
-```javascript
-class SoundEngine {
-  constructor() {
-    this.ctx = null;
-    this.isEnabled = true; // Enabled by default
-    this.soundType = 'tactile';
-    this.setupUnlock();
-  }
-
-  setupUnlock() {
-    const unlock = () => {
-      this.initCtx();
-      if (this.ctx && this.ctx.state === 'suspended') {
-        this.ctx.resume();
-      }
-    };
-    window.addEventListener('pointerdown', unlock, { once: true, passive: true });
-    window.addEventListener('keydown', unlock, { once: true, passive: true });
-  }
-
-  initCtx() {
-    if (!this.ctx && typeof window !== 'undefined') {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) this.ctx = new AudioCtx();
-    }
-  }
-
-  playKeyClick() {
-    if (!this.isEnabled) return;
-    this.initCtx();
-    if (!this.ctx) return;
-
-    const t = this.ctx.currentTime;
-
-    // 1. High-frequency tactile snap
-    const snapOsc = this.ctx.createOscillator();
-    const snapGain = this.ctx.createGain();
-    snapOsc.type = 'triangle';
-    snapOsc.frequency.setValueAtTime(1500 + Math.random() * 200, t);
-    snapOsc.frequency.exponentialRampToValueAtTime(320, t + 0.02);
-
-    snapGain.gain.setValueAtTime(0.18, t);
-    snapGain.gain.exponentialRampToValueAtTime(0.001, t + 0.022);
-
-    snapOsc.connect(snapGain);
-    snapGain.connect(this.ctx.destination);
-    snapOsc.start(t);
-    snapOsc.stop(t + 0.025);
-
-    // 2. Mechanical bottom-out thud
-    const bodyOsc = this.ctx.createOscillator();
-    const bodyGain = this.ctx.createGain();
-    bodyOsc.type = 'sine';
-    bodyOsc.frequency.setValueAtTime(140, t + 0.005);
-    bodyOsc.frequency.exponentialRampToValueAtTime(60, t + 0.04);
-
-    bodyGain.gain.setValueAtTime(0.14, t + 0.005);
-    bodyGain.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
-
-    bodyOsc.connect(bodyGain);
-    bodyGain.connect(this.ctx.destination);
-    bodyOsc.start(t + 0.005);
-    bodyOsc.stop(t + 0.05);
-  }
-
-  playErrorClick() {
-    if (!this.isEnabled) return;
-    this.initCtx();
-    if (!this.ctx) return;
-
-    const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(260, t);
-    osc.frequency.setValueAtTime(180, t + 0.05);
-
-    gain.gain.setValueAtTime(0.16, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
-
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.065);
-  }
-}
-```
-
----
-
-## 8. Keyboard Shortcuts Map
-
-* **`Tab` + `Enter`**: Instant test restart / reset from any screen state.
-* **`Tab`**: Quick focus / restart.
-* **`Ctrl` + `Backspace` / `Alt` + `Backspace` / `Delete`**: Delete full active word; if at start of word, jump to previous word and clear it.
-* **Single `Backspace`**: Delete single character; stay within active word.
-* **`Escape`**: Pause typing / blur input.
-
----
-
-## 9. Developer Testing Tooling
-
-For testing and visual inspection before typing a full test:
-* Provide a discreet fixed floating toolbar in the bottom-right corner.
-* Provides immediate buttons to switch between `State: Typing` and `State: Result`.
-* Provides mock result presets (`72 WPM / 96%`, `108 WPM / 99%`, `54 WPM / 88%`) so the result chart, mistake analysis, and weak spots can be reviewed instantly.
+1. Run `npm run check`.
+2. Run `npm run build`.
+3. Serve the root directory over HTTP.
+4. Verify the typing screen loads words and the settings controls work.
+5. Verify the timer ends with a visual/audio cue and then shows results.
+6. Verify the result chart, history, and actions render without console errors.

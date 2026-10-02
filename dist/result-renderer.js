@@ -41,7 +41,7 @@ export class ResultRenderer {
         if (!points || points.length === 0)
             return;
         const width = 680;
-        const height = 140;
+        const height = 260;
         const padTop = 15;
         const padBottom = 25;
         const padLeft = 40;
@@ -58,7 +58,7 @@ export class ResultRenderer {
         const getY = (v) => padTop + drawH - ((v - minVal) / valRange) * drawH;
         let svgInner = "";
         // Subtle horizontal gridlines and numeric Y-axis labels
-        const gridSteps = 3;
+        const gridSteps = 5;
         for (let i = 0; i <= gridSteps; i++) {
             const val = Math.round(minVal + (valRange / gridSteps) * i);
             const y = getY(val);

@@ -24,14 +24,15 @@
 }
 
 .brand-wordmark {
-  font-family: var(--font-sans);
-  font-size: 19px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--text-primary);
   display: inline-flex;
   align-items: center;
   transition: opacity var(--trans-fast);
+}
+
+.brand-logo {
+  display: block;
+  width: 112px;
+  height: auto;
 }
 
 .brand-wordmark:hover {

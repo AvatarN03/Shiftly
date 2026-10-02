@@ -138,6 +138,32 @@ class SoundEngine {
             // Ignore audio error
         }
     }
+    playSessionComplete() {
+        if (!this.isEnabled)
+            return;
+        this.initCtx();
+        if (!this.ctx)
+            return;
+        try {
+            const now = this.ctx.currentTime;
+            [0, 0.13].forEach((offset, index) => {
+                const oscillator = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                oscillator.type = "sine";
+                oscillator.frequency.setValueAtTime(index === 0 ? 520 : 760, now + offset);
+                gain.gain.setValueAtTime(0.001, now + offset);
+                gain.gain.exponentialRampToValueAtTime(0.16, now + offset + 0.015);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.22);
+                oscillator.connect(gain);
+                gain.connect(this.ctx.destination);
+                oscillator.start(now + offset);
+                oscillator.stop(now + offset + 0.24);
+            });
+        }
+        catch {
+            // Ignore audio errors caused by browser autoplay restrictions.
+        }
+    }
 }
 export const sound = new SoundEngine();
 //# sourceMappingURL=sound.js.map

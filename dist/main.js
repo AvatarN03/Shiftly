@@ -1,14 +1,14 @@
 import { TypingEngine } from "./typing-engine.js";
 import { ResultRenderer } from "./result-renderer.js";
 import { setupSettings } from "./settings.js";
-import { setupDevToolbar } from "./dev-toolbar.js";
 import { appState } from "./state.js";
+import { loadWordList } from "./words.js";
 document.addEventListener("DOMContentLoaded", () => {
     // Initialize Core Engines
     const typingEngine = new TypingEngine();
     const resultRenderer = new ResultRenderer();
+    void loadWordList();
     setupSettings();
-    setupDevToolbar(typingEngine);
     //Screen state containers
     const typingStateEl = document.getElementById("typing-state");
     const resultStateEl = document.getElementById("result-state");

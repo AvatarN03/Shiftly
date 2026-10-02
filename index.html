@@ -3,27 +3,28 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Shiftly 2.0</title>
+    <title>Shifty 2.0</title>
+    <link rel="icon" type="image/svg+xml" href="./assets/shifty-icon.png" />
     <meta
       name="description"
-      content="Minimalist typing-speed practice application prototype — fast, technical, and focused."
+      content="Minimalist typing-speed practice application — fast, technical, and focused."
     />
-    <meta property="og:title" content="Shiftly 2.0" />
+    <meta property="og:title" content="Shifty 2.0" />
     <meta
       property="og:description"
-      content="Minimalist typing-speed practice application prototype — fast, technical, and focused."
+      content="Minimalist typing-speed practice application — fast, technical, and focused."
     />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Inconsolata:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600&family=Roboto+Mono:wght@300;400;500;600&family=Source+Code+Pro:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./css/index.css" />
   </head>
-  <body class="shiftly-body">
+    <body class="shifty-body">
     <div id="app" class="app-root">
       <!-- HEADER ZONE -->
       <header class="app-header" role="banner">
@@ -32,9 +33,13 @@
             href="#"
             class="brand-wordmark"
             id="brand-home"
-            aria-label="Shiftly home"
+            aria-label="Shifty home"
           >
-            SHIFTLY<span class="brand-dot"></span>
+            <img
+              class="brand-logo"
+              src="./assets/shifty-lockup.svg"
+              alt="Shifty"
+            />
           </a>
           <span class="brand-version" aria-hidden="true">2.0</span>
         </div>
@@ -216,6 +221,16 @@
 
       <!-- MAIN CONTAINER: SWITCHES BETWEEN TYPING STATE & RESULT STATE -->
       <main class="app-viewport" id="viewport">
+        <div
+          id="session-complete-notice"
+          class="session-complete-notice"
+          role="status"
+          aria-live="assertive"
+          aria-hidden="true"
+        >
+          <span class="session-complete-dot" aria-hidden="true"></span>
+          <span>Time’s up — typing stopped</span>
+        </div>
         <!-- ============================================ -->
         <!-- STATE 1: TYPING SCREEN -->
         <!-- ============================================ -->
@@ -374,7 +389,7 @@
               <svg
                 id="performance-chart"
                 class="performance-chart"
-                viewBox="0 0 680 160"
+                viewBox="0 0 680 280"
                 preserveAspectRatio="none"
                 aria-label="WPM over time chart"
               >
@@ -481,13 +496,13 @@
         </section>
       </main>
 
-      <!-- SETTINGS POPOVER (LIGHTWEIGHT PROTOTYPE) -->
+      <!-- SETTINGS POPOVER -->
       <div
         id="settings-popover"
         class="settings-popover"
         role="dialog"
         aria-modal="true"
-        aria-label="Shiftly Preferences"
+        aria-label="Shifty Preferences"
         style="display: none"
       >
         <div class="popover-header">
@@ -510,6 +525,12 @@
             </div>
             <select id="pref-font-select" class="pref-select">
               <option value="jetbrains">JetBrains Mono</option>
+              <option value="fira-code">Fira Code</option>
+              <option value="source-code-pro">Source Code Pro</option>
+              <option value="roboto-mono">Roboto Mono</option>
+              <option value="inconsolata">Inconsolata</option>
+              <option value="space-mono">Space Mono</option>
+              <option value="cascadia-code">Cascadia Code</option>
               <option value="system">System Monospace</option>
             </select>
           </div>
@@ -564,7 +585,7 @@
           <div class="mobile-notice-icon">⌨</div>
           <h2 class="mobile-notice-title">Keyboard-First Experience</h2>
           <p class="mobile-notice-text">
-            Shiftly is strictly optimized for physical tactile keyboards. For
+            Shifty is strictly optimized for physical tactile keyboards. For
             standard speed measurement, please open on a laptop or desktop
             computer.
           </p>
@@ -573,70 +594,11 @@
             class="mobile-preview-btn"
             type="button"
           >
-            Continue Prototype Preview
+            Continue
           </button>
         </div>
       </aside>
 
-      <!-- DEVELOPER PROTOTYPE CONTROLS (Floating, clean, obvious) -->
-      <aside
-        class="dev-toolbar"
-        id="dev-toolbar"
-        aria-label="Developer prototype state switcher"
-      >
-        <div
-          class="dev-toolbar-handle"
-          id="dev-toolbar-toggle"
-          title="Developer state switcher"
-        >
-          <span class="dev-tag">PROTOTYPE</span>
-          <span class="dev-current-state" id="dev-current-state-label"
-            >Typing</span
-          >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </div>
-        <div class="dev-toolbar-panel" id="dev-toolbar-panel">
-          <div class="dev-panel-title">Visual State Switcher</div>
-          <div class="dev-buttons-row">
-            <button class="dev-btn active" id="dev-btn-typing" type="button">
-              1. Typing State
-            </button>
-            <button class="dev-btn" id="dev-btn-result" type="button">
-              2. Result State
-            </button>
-          </div>
-          <div class="dev-panel-divider"></div>
-          <div class="dev-panel-title">Mock Result Presets</div>
-          <div class="dev-buttons-row">
-            <button class="dev-preset-btn" id="dev-preset-mid" type="button">
-              72 WPM / 96%
-            </button>
-            <button class="dev-preset-btn" id="dev-preset-high" type="button">
-              108 WPM / 99%
-            </button>
-            <button
-              class="dev-preset-btn"
-              id="dev-preset-turbulent"
-              type="button"
-            >
-              54 WPM / 88%
-            </button>
-          </div>
-          <div class="dev-hint">
-            Tip: You can also type live on the screen or press
-            <kbd>Tab</kbd>+<kbd>Enter</kbd>
-          </div>
-        </div>
-      </aside>
     </div>
 
     <!-- MAIN JAVASCRIPT / TYPESCRIPT CONTROLLER -->

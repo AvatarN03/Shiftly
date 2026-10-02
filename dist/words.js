@@ -44,7 +44,24 @@ export const WEAK_SPOTS_WORDS = [
     "there", "their", "breathe", "northern", "southern", "brother",
     "father", "mother", "rather", "feather", "together", "method"
 ];
-export function getRandomWords(count, pool = COMMON_WORDS) {
+let loadedWordPool = COMMON_WORDS;
+export async function loadWordList() {
+    try {
+        const response = await fetch("./data/words-common.json");
+        if (!response.ok)
+            throw new Error(`Word list request failed: ${response.status}`);
+        const words = await response.json();
+        if (!Array.isArray(words))
+            throw new Error("Word list must be an array");
+        const validWords = words.filter((word) => /^[a-z]+$/.test(word));
+        loadedWordPool = Array.from(new Set([...COMMON_WORDS, ...validWords]));
+    }
+    catch {
+        // The bundled list keeps the app usable offline or when the data file is unavailable.
+        loadedWordPool = COMMON_WORDS;
+    }
+}
+export function getRandomWords(count, pool = loadedWordPool) {
     const result = [];
     for (let i = 0; i < count; i++) {
         const randomIndex = Math.floor(Math.random() * pool.length);

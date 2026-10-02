@@ -25,6 +25,8 @@ export class TypingEngine {
   private isRunning: boolean = false;
   private startTime: number = 0;
   private timerInterval: number | null = null;
+  private completionTimeout: number | null = null;
+  private completionNotice: HTMLElement;
   private secondsRemaining: number = 30;
   private totalTypedKeystrokes: number = 0;
   private correctKeystrokes: number = 0;
@@ -44,6 +46,7 @@ export class TypingEngine {
     this.liveTimerEl = document.getElementById("live-timer")!;
     this.liveWpmEl = document.getElementById("live-wpm")!;
     this.liveAccEl = document.getElementById("live-acc")!;
+    this.completionNotice = document.getElementById("session-complete-notice")!;
 
     this.bindEvents();
     this.resetTest();
@@ -149,6 +152,12 @@ export class TypingEngine {
       clearInterval(this.timerInterval);
       this.timerInterval = null;
     }
+    if (this.completionTimeout) {
+      clearTimeout(this.completionTimeout);
+      this.completionTimeout = null;
+    }
+    this.completionNotice.classList.remove("visible");
+    this.completionNotice.setAttribute("aria-hidden", "true");
 
     this.isWeakSpotsMode = weakSpotsOnly;
     this.isRunning = false;
@@ -635,7 +644,15 @@ export class TypingEngine {
     };
 
     appState.setLastResult(result);
-    appState.setScreen("result");
+    sound.playSessionComplete();
+    this.completionNotice.classList.add("visible");
+    this.completionNotice.setAttribute("aria-hidden", "false");
+    this.completionTimeout = window.setTimeout(() => {
+      this.completionNotice.classList.remove("visible");
+      this.completionNotice.setAttribute("aria-hidden", "true");
+      appState.setScreen("result");
+      this.completionTimeout = null;
+    }, 650);
   }
 
   private generateMockHistory(wpm: number, duration: number): WpmPoint[] {

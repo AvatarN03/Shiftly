@@ -39,7 +39,7 @@ export interface SessionResult {
 }
 
 export interface UserPerferences {
-    fontFamily: 'jetbrains' | 'fira-code' | 'source-code-pro' | 'roboto-mono' | 'inconsolata' | 'cascadia-code';
+    fontFamily: 'jetbrains' | 'fira-code' | 'source-code-pro' | 'roboto-mono' | 'inconsolata' | 'space-mono' | 'cascadia-code' | 'system';
     caretStyle: 'bar' | 'block' | 'underline';
     sound : 'off' | 'tactile' | 'soft';
 }
