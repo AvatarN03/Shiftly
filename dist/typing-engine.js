@@ -14,6 +14,7 @@ export class TypingEngine {
         this.startTime = 0;
         this.timerInterval = null;
         this.completionTimeout = null;
+        this.completionHandled = false;
         this.secondsRemaining = 30;
         this.totalTypedKeystrokes = 0;
         this.correctKeystrokes = 0;
@@ -126,6 +127,7 @@ export class TypingEngine {
         this.completionNotice.setAttribute("aria-hidden", "true");
         this.isWeakSpotsMode = weakSpotsOnly;
         this.isRunning = false;
+        this.completionHandled = false;
         this.startTime = 0;
         this.currentWordIdx = 0;
         this.currentCharIdx = 0;
@@ -435,18 +437,29 @@ export class TypingEngine {
     getWordEl(idx) {
         return this.wordsContainer.querySelector(`[data-word-index="${idx}"]`);
     }
-    recordHistoryPoint() {
-        const elapsedSec = (Date.now() - this.startTime) / 1000;
+    recordHistoryPoint(atElapsedSec) {
+        const elapsedSec = atElapsedSec ?? (Date.now() - this.startTime) / 1000;
         if (elapsedSec <= 0)
             return;
+        const time = Math.max(1, Math.round(elapsedSec));
         const currentWpm = Math.max(0, Math.round(this.correctKeystrokes / 5 / (elapsedSec / 60)));
         const currentRawWpm = Math.max(0, Math.round(this.totalTypedKeystrokes / 5 / (elapsedSec / 60)));
-        this.wpmHistory.push({
-            time: Math.round(elapsedSec),
+        const point = {
+            time,
             wpm: currentWpm,
             rawWpm: currentRawWpm,
             errors: this.errorKeystrokes,
-        });
+        };
+        // Replace a point recorded for the same second instead of creating
+        // duplicate x-coordinates in the result graph.
+        const existingIndex = this.wpmHistory.findIndex((item) => item.time === time);
+        if (existingIndex >= 0) {
+            this.wpmHistory[existingIndex] = point;
+        }
+        else {
+            this.wpmHistory.push(point);
+            this.wpmHistory.sort((a, b) => a.time - b.time);
+        }
     }
     updateLiveStats() {
         // Timer display
@@ -471,6 +484,12 @@ export class TypingEngine {
         this.liveAccEl.textContent = Math.min(100, Math.max(0, accuracy)).toString();
     }
     finishSession() {
+        // Timer ticks and word completion can race. A session must only produce
+        // one result, one history entry, and one completion sound.
+        if (this.completionHandled || !this.isRunning || this.startTime === 0) {
+            return;
+        }
+        this.completionHandled = true;
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
             this.timerInterval = null;
@@ -478,6 +497,7 @@ export class TypingEngine {
         this.isRunning = false;
         const elapsedSec = Math.max(1, Math.round((Date.now() - this.startTime) / 1000));
         const elapsedMin = elapsedSec / 60;
+        this.recordHistoryPoint(elapsedSec);
         const netWpm = Math.max(0, Math.round(this.correctKeystrokes / 5 / elapsedMin));
         const rawWpm = Number((this.totalTypedKeystrokes / 5 / elapsedMin).toFixed(1));
         const accuracy = Number((this.totalTypedKeystrokes > 0
@@ -509,25 +529,17 @@ export class TypingEngine {
             ? `${appState.config.timeTarget}s`
             : `${appState.config.wordsTarget}w`;
         const result = {
-            netWpm: netWpm || 72,
-            rawWpm: rawWpm || 78.2,
-            accuracy: accuracy || 96.4,
-            correctChars: this.correctKeystrokes || 218,
-            incorrectChars: this.errorKeystrokes || 8,
+            netWpm,
+            rawWpm,
+            accuracy,
+            correctChars: this.correctKeystrokes,
+            incorrectChars: this.errorKeystrokes,
             extraChars: 0,
             consistency,
             durationSec: elapsedSec,
             modeLabel,
-            wpmHistory: this.wpmHistory.length > 0
-                ? this.wpmHistory
-                : this.generateMockHistory(netWpm || 72, elapsedSec),
-            mistakes: mistakes.length > 0
-                ? mistakes.slice(0, 4)
-                : [
-                    { expected: "e", typed: "r", count: 3 },
-                    { expected: "t", typed: "y", count: 2 },
-                    { expected: "a", typed: "s", count: 2 },
-                ],
+            wpmHistory: this.wpmHistory,
+            mistakes: mistakes.slice(0, 4),
             weakSpots,
             timestamp: new Date(),
         };
@@ -541,20 +553,6 @@ export class TypingEngine {
             appState.setScreen("result");
             this.completionTimeout = null;
         }, 650);
-    }
-    generateMockHistory(wpm, duration) {
-        const points = [];
-        const step = Math.max(1, Math.floor(duration / 6));
-        for (let t = 0; t <= duration; t += step) {
-            const jitter = Math.sin(t * 0.8) * 4;
-            points.push({
-                time: t,
-                wpm: Math.round(wpm + jitter),
-                rawWpm: Math.round(wpm + jitter + 5),
-                errors: t > 10 ? 1 : 0,
-            });
-        }
-        return points;
     }
 }
 //# sourceMappingURL=typing-engine.js.map

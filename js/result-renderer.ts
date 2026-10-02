@@ -66,7 +66,30 @@ export class ResultRenderer {
   }
 
   private renderTechnicalChart(points: WpmPoint[], duration: number) {
-    if (!points || points.length === 0) return;
+    if (!points || points.length === 0) {
+      this.chartSvg.innerHTML = "";
+      return;
+    }
+
+    // Keep the chart deterministic even if a result was produced around a
+    // timer boundary and contains repeated timestamps.
+    const stablePoints = Array.from(
+      new Map(
+        points
+          .filter(
+            (point) =>
+              Number.isFinite(point.time) &&
+              Number.isFinite(point.wpm) &&
+              Number.isFinite(point.rawWpm),
+          )
+          .sort((a, b) => a.time - b.time)
+          .map((point) => [point.time, point] as const),
+      ).values(),
+    );
+    if (stablePoints.length === 0) {
+      this.chartSvg.innerHTML = "";
+      return;
+    }
 
     const width = 680;
     const height = 260;
@@ -79,7 +102,7 @@ export class ResultRenderer {
     const drawH = height - padTop - padBottom;
 
     // Determine scale bounds
-    const allWpms = points.flatMap((p) => [p.wpm, p.rawWpm]);
+    const allWpms = stablePoints.flatMap((p) => [p.wpm, p.rawWpm]);
     const maxVal = Math.max(
       90,
       Math.ceil((Math.max(...allWpms) + 10) / 10) * 10,
@@ -90,7 +113,7 @@ export class ResultRenderer {
     );
     const valRange = Math.max(20, maxVal - minVal);
 
-    const maxTime = Math.max(1, duration, points[points.length - 1].time);
+    const maxTime = Math.max(1, duration, stablePoints[stablePoints.length - 1].time);
 
     const getX = (t: number) => padLeft + (t / maxTime) * drawW;
     const getY = (v: number) =>
@@ -111,7 +134,7 @@ export class ResultRenderer {
 
     // Raw WPM path (dashed subtle)
     let rawPathD = "";
-    points.forEach((p, idx) => {
+    stablePoints.forEach((p, idx) => {
       const x = getX(p.time);
       const y = getY(p.rawWpm);
       rawPathD += `${idx === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)} `;
@@ -120,7 +143,7 @@ export class ResultRenderer {
 
     // Net WPM path (smooth curve or crisp line)
     let netPathD = "";
-    points.forEach((p, idx) => {
+    stablePoints.forEach((p, idx) => {
       const x = getX(p.time);
       const y = getY(p.wpm);
       netPathD += `${idx === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)} `;
@@ -128,7 +151,7 @@ export class ResultRenderer {
     svgInner += `<path d="${netPathD}" class="chart-line" />`;
 
     // Data points & error indicators
-    points.forEach((p) => {
+    stablePoints.forEach((p) => {
       const x = getX(p.time);
       const y = getY(p.wpm);
       if (p.errors > 0) {

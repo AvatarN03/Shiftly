@@ -26,6 +26,7 @@ export class TypingEngine {
   private startTime: number = 0;
   private timerInterval: number | null = null;
   private completionTimeout: number | null = null;
+  private completionHandled: boolean = false;
   private completionNotice: HTMLElement;
   private secondsRemaining: number = 30;
   private totalTypedKeystrokes: number = 0;
@@ -161,6 +162,7 @@ export class TypingEngine {
 
     this.isWeakSpotsMode = weakSpotsOnly;
     this.isRunning = false;
+    this.completionHandled = false;
     this.startTime = 0;
     this.currentWordIdx = 0;
     this.currentCharIdx = 0;
@@ -502,9 +504,11 @@ export class TypingEngine {
     return this.wordsContainer.querySelector(`[data-word-index="${idx}"]`);
   }
 
-  private recordHistoryPoint() {
-    const elapsedSec = (Date.now() - this.startTime) / 1000;
+  private recordHistoryPoint(atElapsedSec?: number) {
+    const elapsedSec = atElapsedSec ?? (Date.now() - this.startTime) / 1000;
     if (elapsedSec <= 0) return;
+
+    const time = Math.max(1, Math.round(elapsedSec));
 
     const currentWpm = Math.max(
       0,
@@ -515,12 +519,22 @@ export class TypingEngine {
       Math.round(this.totalTypedKeystrokes / 5 / (elapsedSec / 60)),
     );
 
-    this.wpmHistory.push({
-      time: Math.round(elapsedSec),
+    const point: WpmPoint = {
+      time,
       wpm: currentWpm,
       rawWpm: currentRawWpm,
       errors: this.errorKeystrokes,
-    });
+    };
+
+    // Replace a point recorded for the same second instead of creating
+    // duplicate x-coordinates in the result graph.
+    const existingIndex = this.wpmHistory.findIndex((item) => item.time === time);
+    if (existingIndex >= 0) {
+      this.wpmHistory[existingIndex] = point;
+    } else {
+      this.wpmHistory.push(point);
+      this.wpmHistory.sort((a, b) => a.time - b.time);
+    }
   }
 
   private updateLiveStats() {
@@ -559,6 +573,13 @@ export class TypingEngine {
   }
 
   public finishSession() {
+    // Timer ticks and word completion can race. A session must only produce
+    // one result, one history entry, and one completion sound.
+    if (this.completionHandled || !this.isRunning || this.startTime === 0) {
+      return;
+    }
+    this.completionHandled = true;
+
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
       this.timerInterval = null;
@@ -570,6 +591,8 @@ export class TypingEngine {
       Math.round((Date.now() - this.startTime) / 1000),
     );
     const elapsedMin = elapsedSec / 60;
+
+    this.recordHistoryPoint(elapsedSec);
 
     const netWpm = Math.max(
       0,
@@ -618,27 +641,17 @@ export class TypingEngine {
         : `${appState.config.wordsTarget}w`;
 
     const result: SessionResult = {
-      netWpm: netWpm || 72,
-      rawWpm: rawWpm || 78.2,
-      accuracy: accuracy || 96.4,
-      correctChars: this.correctKeystrokes || 218,
-      incorrectChars: this.errorKeystrokes || 8,
+      netWpm,
+      rawWpm,
+      accuracy,
+      correctChars: this.correctKeystrokes,
+      incorrectChars: this.errorKeystrokes,
       extraChars: 0,
       consistency,
       durationSec: elapsedSec,
       modeLabel,
-      wpmHistory:
-        this.wpmHistory.length > 0
-          ? this.wpmHistory
-          : this.generateMockHistory(netWpm || 72, elapsedSec),
-      mistakes:
-        mistakes.length > 0
-          ? mistakes.slice(0, 4)
-          : [
-              { expected: "e", typed: "r", count: 3 },
-              { expected: "t", typed: "y", count: 2 },
-              { expected: "a", typed: "s", count: 2 },
-            ],
+      wpmHistory: this.wpmHistory,
+      mistakes: mistakes.slice(0, 4),
       weakSpots,
       timestamp: new Date(),
     };
@@ -655,18 +668,4 @@ export class TypingEngine {
     }, 650);
   }
 
-  private generateMockHistory(wpm: number, duration: number): WpmPoint[] {
-    const points: WpmPoint[] = [];
-    const step = Math.max(1, Math.floor(duration / 6));
-    for (let t = 0; t <= duration; t += step) {
-      const jitter = Math.sin(t * 0.8) * 4;
-      points.push({
-        time: t,
-        wpm: Math.round(wpm + jitter),
-        rawWpm: Math.round(wpm + jitter + 5),
-        errors: t > 10 ? 1 : 0,
-      });
-    }
-    return points;
-  }
 }
