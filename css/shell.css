@@ -1,0 +1,110 @@
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.app-header,
+.app-footer,
+.app-viewport {
+  width: min(calc(100% - 48px), var(--container-max-w));
+  margin-inline: auto;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 88px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 9px;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.brand-mark {
+  color: var(--accent);
+  font-family: "JetBrains Mono", "IBM Plex Mono", Consolas, monospace;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.brand-name {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.brand-version {
+  color: var(--text-tertiary);
+  font-family: "JetBrains Mono", "IBM Plex Mono", Consolas, monospace;
+  font-size: 11px;
+}
+
+.config-bar,
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.config-item,
+.meta-line,
+.app-footer {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.config-item + .config-item::before,
+.meta-line span + span::before {
+  margin-right: 18px;
+  color: var(--text-dim);
+  content: "·";
+}
+
+.app-viewport {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: 56px 72px;
+}
+
+.screen-state {
+  width: 100%;
+}
+
+.app-footer {
+  padding-block: 20px 28px;
+  text-align: center;
+}
+
+@media (max-width: 680px) {
+  .app-header,
+  .app-footer,
+  .app-viewport {
+    width: min(calc(100% - 32px), var(--container-max-w));
+  }
+
+  .app-header {
+    min-height: 72px;
+  }
+
+  .config-bar {
+    gap: 10px;
+  }
+
+  .config-item:nth-child(n + 3) {
+    display: none;
+  }
+
+  .app-viewport {
+    padding-block: 36px 48px;
+  }
+}

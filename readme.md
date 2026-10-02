@@ -24,11 +24,28 @@ No frameworks. No dependencies. Just a clean UI and smooth typing experience.
 
 ```
 Shiftly/
-│── index.html          # Main UI
-│── style.css           # Styling and layout
-│── main.js             # Game logic
-│── assets/             # Icons & images (optional)
-│── README.md           # Project documentation
+├── index.html          # Semantic application shell
+├── css/                # Modular Shiftly 2.0 stylesheets
+│   ├── variables.css
+│   ├── base.css
+│   ├── shell.css
+│   ├── typing.css
+│   ├── result.css
+│   ├── settings.css
+│   └── dev-toolbar.css
+├── js/                 # Empty implementation modules to be authored
+│   ├── types.js
+│   ├── words.js
+│   ├── sound.js
+│   ├── state.js
+│   ├── typing-engine.js
+│   ├── result-renderer.js
+│   ├── settings.js
+│   ├── dev-toolbar.js
+│   └── main.js
+├── assets/             # Icons and images
+├── AGENT.md            # Shiftly 2.0 engineering specification
+└── README.md           # Project documentation
 ```
 
 ---
@@ -138,7 +155,7 @@ appendWords(50);   // Words added each time
 ```
 
 ### **Styling**
-All UI layout and visuals are in `style.css` — easy to customize colors, fonts, and spacing.
+UI layout and visuals are split across the files in `css/`. Load them in this order: `variables.css`, `base.css`, `shell.css`, `typing.css`, `result.css`, `settings.css`, then `dev-toolbar.css`.
 
 ---
 

@@ -1,0 +1,48 @@
+.dev-toolbar {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(26, 26, 26, 0.96);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+}
+
+.dev-toolbar-label {
+  color: var(--text-tertiary);
+  font-family: "JetBrains Mono", "IBM Plex Mono", Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dev-toolbar button {
+  min-height: 30px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 5px 9px;
+}
+
+.dev-toolbar button:hover,
+.dev-toolbar button[aria-pressed="true"] {
+  border-color: var(--border-focus);
+  background: var(--accent-muted);
+  color: var(--accent-hover);
+}
+
+@media (max-width: 680px) {
+  .dev-toolbar {
+    right: 10px;
+    bottom: 10px;
+    max-width: calc(100vw - 20px);
+    flex-wrap: wrap;
+  }
+}

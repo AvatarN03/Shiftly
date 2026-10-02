@@ -1,0 +1,54 @@
+.settings-popover {
+  width: min(360px, calc(100vw - 32px));
+  padding: 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.settings-popover::backdrop,
+.mobile-notice::backdrop {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.settings-title {
+  margin-bottom: 18px;
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.settings-group {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.settings-label {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.settings-control {
+  min-height: 38px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  padding: 8px 10px;
+}
+
+.settings-close,
+.modal-close {
+  color: var(--text-secondary);
+  background: transparent;
+}
+
+.mobile-notice {
+  width: min(440px, calc(100vw - 32px));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 24px;
+}
